@@ -1,10 +1,36 @@
-var Vector = function(x, y, z) {
+var Matrix = function(data){
+	this.data = data;
+
+	this.rows = function(){
+		return data.length;
+	};
+
+	this.columns = function(){
+		return data.length >= 1 ? data[0].length : 0;
+	};
+};
+
+var Vector3D = function(x, y, z) {
 	this.x = x;
 	this.y = y;
 	this.z = z;
 
 	this.magnitude = function(){
 		return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z));
+	};
+
+	this.transform = function(matrix){
+		var n = 3;
+		var result = [0,0,0];
+		for (var row = 0; row < n; row++) {
+				result[row] += matrix.data[row][0] * this.x;
+				result[row] += matrix.data[row][1] * this.y;
+				result[row] += matrix.data[row][2] * this.z;
+		};
+
+		this.x = result[0];
+		this.y = result[1];
+		this.z = result[2];
 	};
 };
 
@@ -28,9 +54,11 @@ var Vertex = function(center, offset) {
 		imageData.data[xi + yi + 2] = color[2];
 		imageData.data[xi + yi + 3] = color[3];
 	};
+
+	this.transform = function(matrix){
+		offset.transform(matrix);
+	};
 };
-
-
 
 var Cuboid = function(center, size){
 	this.center = center;
@@ -47,15 +75,21 @@ var Cuboid = function(center, size){
 	};
 
 	this.initializeVertices = function(){
-		this.vertices.push(new Vertex(center, new Vector(-this.halfWidth, -this.halfHeight, -this.halfDepth)));
-		this.vertices.push(new Vertex(center, new Vector(-this.halfWidth, -this.halfHeight, +this.halfDepth)));
-		this.vertices.push(new Vertex(center, new Vector(-this.halfWidth, this.halfHeight, -this.halfDepth)));
-		this.vertices.push(new Vertex(center, new Vector(-this.halfWidth, this.halfHeight, this.halfDepth)));
+		this.vertices.push(new Vertex(center, new Vector3D(-this.halfWidth, -this.halfHeight, -this.halfDepth)));
+		this.vertices.push(new Vertex(center, new Vector3D(-this.halfWidth, -this.halfHeight, +this.halfDepth)));
+		this.vertices.push(new Vertex(center, new Vector3D(-this.halfWidth, this.halfHeight, -this.halfDepth)));
+		this.vertices.push(new Vertex(center, new Vector3D(-this.halfWidth, this.halfHeight, this.halfDepth)));
 
-		this.vertices.push(new Vertex(center, new Vector(this.halfWidth, -this.halfHeight, -this.halfDepth)));
-		this.vertices.push(new Vertex(center, new Vector(this.halfWidth, -this.halfHeight, this.halfDepth)));
-		this.vertices.push(new Vertex(center, new Vector(this.halfWidth, this.halfHeight, -this.halfDepth)));
-		this.vertices.push(new Vertex(center, new Vector(this.halfWidth, this.halfHeight, this.halfDepth)));
+		this.vertices.push(new Vertex(center, new Vector3D(this.halfWidth, -this.halfHeight, -this.halfDepth)));
+		this.vertices.push(new Vertex(center, new Vector3D(this.halfWidth, -this.halfHeight, this.halfDepth)));
+		this.vertices.push(new Vertex(center, new Vector3D(this.halfWidth, this.halfHeight, -this.halfDepth)));
+		this.vertices.push(new Vertex(center, new Vector3D(this.halfWidth, this.halfHeight, this.halfDepth)));
+	};
+
+	this.transform = function(matrix){
+		this.vertices.forEach(function(vertex){
+			vertex.transform(matrix);
+		});
 	};
 
 	this.initializeVertices();
@@ -65,8 +99,25 @@ var canvas = document.getElementById('canvas'),
     context = canvas.getContext('2d');
 var imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
 
-var cuboid = new Cuboid(new Vector(imageData.width/2, imageData.height/2, 300), 
-						new Vector(250, 250, 250));
+var cuboid = new Cuboid(new Vector3D(imageData.width/2, imageData.height/2, 300), 
+						new Vector3D(250, 250, 250));
 
-cuboid.draw(imageData, [200,200,200,255]);
-context.putImageData(imageData, 0, 0);
+var angleZ = 3.14/18;
+var angleY = 3.14/5;
+
+var z = new Matrix([[Math.cos(angleZ),-Math.sin(angleZ),0],
+					[Math.sin(angleZ),Math.cos(angleZ),0],
+					[0,0,1]]);
+
+var y = new Matrix([[Math.cos(angleY),0,Math.sin(angleY)],
+					[0,1,0],
+					[-Math.sin(angleY),0,Math.cos(angleY)]]);
+
+function draw() {
+	cuboid.draw(imageData, [200,200,200,255]);
+	cuboid.transform(z);
+	cuboid.transform(y);
+	context.putImageData(imageData, 0, 0);
+}
+
+setInterval(draw, 30);
