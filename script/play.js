@@ -12,9 +12,16 @@ var Vertex = function(center, offset) {
 	this.center = center;
 	this.offset = offset;
 
-	this.draw = function(imageData, color){
-		var xi = (this.center.x + this.offset.x)*4;
-		var yi = (this.center.y + this.offset.y) * (imageData.width * 4);
+	this.draw = function(imageData, color, viewDistance){
+		viewDistance = viewDistance || 300;
+		var posX = this.center.x + this.offset.x;
+		var posY = this.center.y + this.offset.y;
+		var posZ = this.center.z + this.offset.z;
+		var perspectiveFactor = (posZ + viewDistance);
+		var screenX = Math.floor((((posX - imageData.width/2)/perspectiveFactor) * viewDistance) + imageData.width/2);
+		var screenY = Math.floor(((posY - imageData.height/2)/perspectiveFactor) * viewDistance + imageData.height/2);
+		var xi = screenX * 4;
+		var yi = screenY * (imageData.width * 4);
 		
 		imageData.data[xi + yi] = color[0];
 		imageData.data[xi + yi + 1] = color[1];
@@ -58,8 +65,8 @@ var canvas = document.getElementById('canvas'),
     context = canvas.getContext('2d');
 var imageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
 
-var cuboid = new Cuboid(new Vector(imageData.width/2, imageData.height/2, imageData.height/2), 
-						new Vector(300, 300, 300));
+var cuboid = new Cuboid(new Vector(imageData.width/2, imageData.height/2, 300), 
+						new Vector(250, 250, 250));
 
 cuboid.draw(imageData, [200,200,200,255]);
 context.putImageData(imageData, 0, 0);
