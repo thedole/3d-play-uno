@@ -142,12 +142,12 @@ var canvas = document.getElementById('canvas'),
 	imageData = baseImageData,
 	blackScreen = [],
 	
-	pointCloud = new PointCloud(6400,	new Vector3D(imageData.width /2, imageData.height/2, 1000), 
-										new Vector3D(6400,6400,6400)),
+	pointCloud = new PointCloud(3200,	new Vector3D(imageData.width /2, imageData.height/2, 2000), 
+										new Vector3D(3200,3200,3200)),
 
 
-	angleZ = 3.14/170,
-	angleY = 3.14/200,
+	angleZ = 3.14/270,
+	angleY = 3.14/400,
 
 	z = new Matrix([[Math.cos(angleZ),-Math.sin(angleZ),0],
 					[Math.sin(angleZ),Math.cos(angleZ),0],
@@ -169,4 +169,4 @@ function draw() {
 	pointCloud.transform(y);
 }
 
-setInterval(draw, 45);
+setInterval(draw, 30);
