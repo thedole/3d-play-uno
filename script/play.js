@@ -28,12 +28,6 @@ var Matrix = function(data){
 };
 
 var Vector3D = function(x, y, z) {
-	this.x = x;
-	this.y = y;
-	this.z = z;
-
-	this.magnitude = Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z));
-
 	this.transform = function(matrix){
 		var result = [0,0,0],
 		data = matrix.data;
@@ -55,6 +49,34 @@ var Vector3D = function(x, y, z) {
 		this.y = result[1];
 		this.z = result[2];
 	};
+
+	this.normalize = function(){
+		this.x = this.x/this.magnitude;
+		this.y = this.y/this.magnitude;
+		this.z = this.z/this.magnitude;
+		this.magnitude = this.calcMagnitude();
+
+		return this;
+	};
+
+	this.scale = function(scalar){
+		this.x = this.x*scalar;
+		this.y = this.y*scalar;
+		this.z = this.z*scalar;
+		this.magnitude = this.calcMagnitude();
+
+		return this;
+	};
+
+	this.calcMagnitude = function(){
+		return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z));
+	};
+
+	this.x = x || Math.random()*2-1;
+	this.y = y || Math.random()*2-1;
+	this.z = z || Math.random()*2-1;
+
+	this.magnitude = this.calcMagnitude();
 };
 
 var Vertex = function(center, offset) {
@@ -81,7 +103,7 @@ var Vertex = function(center, offset) {
 			this.r = color[0];
 			this.g = color[1];
 			this.b = color[2];
-			this.alpha = this.alpha || Math.floor(color[3]/(1 + this.magnitude>>7));
+			this.alpha = this.alpha || Math.floor(color[3] - (this.magnitude*200/683));
 
 			var xi = screenX * 4;
 			var yi = screenY * (width * 4);
@@ -156,10 +178,8 @@ var PointCloud = function(n, center, size){
 	this.vertices = [];
 
 	for (var i = n; i; i--) {
-		this.vertices.push(new Vertex(center,
-											new Vector3D(	Math.random()*this.size.x - this.halfWidth,
-											Math.random()*this.size.y - this.halfHeight,
-											Math.random()*this.size.z - this.halfDepth)));
+		this.vertices.push(new Vertex(center,new Vector3D().normalize().scale(Math.random()*this.halfWidth)
+											));
 	}
 
 	this.draw = function(imageData, color, viewPos){
@@ -204,7 +224,7 @@ var canvas = document.getElementById('canvas'),
 	sinc = 1, cosc=0, sind = Math.sin(Math.PI/41), cosd=Math.cos(Math.PI/41);
 	sine = 1, cose=0, sinf = Math.sin(Math.PI/7), cosf=Math.cos(Math.PI/7),
 
-	pointCloud = new PointCloud(32000,	new Vector3D(imageData.width /2, imageData.height/2, 1024),
+	pointCloud = new PointCloud(16000,	new Vector3D(imageData.width /2, imageData.height/2, 600),
 										new Vector3D(1024,1024,1024)),
 
 	viewPos = new Vector3D(imageData.width/2, imageData.height/2, -1024);
@@ -213,21 +233,22 @@ var canvas = document.getElementById('canvas'),
 function draw() {
 	context.clearRect(0, 0, imageData.width, imageData.height);
 	imageData = context.getImageData(0, 0, imageData.width, imageData.height);
-	pointCloud.draw(imageData, [(127*(1+sina))|0,(127*(1+sinc))|0,(127*(1+sine))|0,255], viewPos);
+	//pointCloud.draw(imageData, [(127*(1+sina))|0,(127*(1+sinc))|0,(127*(1+sine))|0,255], viewPos);
+	pointCloud.draw(imageData, [255,127,255, 255], viewPos);
 	context.putImageData(imageData, 0, 0);
 	pointCloud.transform(rotationMatrix);
 
-	tmpsina = sina*cosb+cosa*sinb;
-	cosa = cosa*cosb - sina*sinb;
-	sina = tmpsina;
+	// tmpsina = sina*cosb+cosa*sinb;
+	// cosa = cosa*cosb - sina*sinb;
+	// sina = tmpsina;
 	
-	tmpsinc = sinc*cosd+cosc*sind;
-	cosc = cosc*cosd - sinc*sind;
-	sinc = tmpsinc;
+	// tmpsinc = sinc*cosd+cosc*sind;
+	// cosc = cosc*cosd - sinc*sind;
+	// sinc = tmpsinc;
 
-	tmpsine = sine*cosf+cose*sinf;
-	cose = cose*cosf - sine*sinf;
-	sine = tmpsine;
+	// tmpsine = sine*cosf+cose*sinf;
+	// cose = cose*cosf - sine*sinf;
+	// sine = tmpsine;
 
 	//console.log(sina);
 	setTimeout(draw, 0);
