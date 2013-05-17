@@ -82,8 +82,10 @@ var Vector3D = function(x, y, z) {
 var Vertex = function(center, offset) {
 	this.center = center;
 	this.offset = offset;
+	
 
-	this.draw = function(imageData, color, viewPos){
+	this.draw = function(imageData, color, viewPos, magnitudecolorinfluence){
+		
 		if(this.posZ < 0){
 			return;
 		}
@@ -103,7 +105,7 @@ var Vertex = function(center, offset) {
 			this.r = color[0];
 			this.g = color[1];
 			this.b = color[2];
-			this.alpha = this.alpha || Math.floor(color[3] - (this.magnitude*200/683));
+			this.alpha = Math.floor(color[3] - (this.magnitude*magnitudecolorinfluence/683));
 
 			var xi = screenX * 4;
 			var yi = screenY * (width * 4);
@@ -176,6 +178,10 @@ var PointCloud = function(n, center, size){
 	this.halfHeight = this.size.y/2;
 	this.halfDepth = this.size.z/2;
 	this.vertices = [];
+	this.sina = 1;
+	this.cosa=0;
+	this.sinb = Math.sin(Math.PI/4);
+	this.cosb=Math.cos(Math.PI/4);
 
 	for (var i = n; i; i--) {
 		this.vertices.push(new Vertex(center,new Vector3D().normalize().scale(Math.random()*this.halfWidth)
@@ -183,8 +189,12 @@ var PointCloud = function(n, center, size){
 	}
 
 	this.draw = function(imageData, color, viewPos){
+		this.tmpsina = this.sina*this.cosb+this.cosa*this.sinb;
+		this.cosa = this.cosa*this.cosb - this.sina*this.sinb;
+		this.sina = this.tmpsina;
+		var magnitudefactor = ((this.sina+1)*100)|0;
 		this.vertices.forEach(function(vertex){
-			vertex.draw(imageData, color, viewPos);
+			vertex.draw(imageData, color, viewPos, magnitudefactor);
 		});
 	};
 
@@ -220,9 +230,9 @@ var canvas = document.getElementById('canvas'),
 					[Math.sin(angleZ),Math.cos(angleZ),0],
 					[0,0,1]]),
 	rotationMatrix = x.multiply(y).multiply(z),
-	sina = 1, cosa=0, sinb = Math.sin(Math.PI/67), cosb=Math.cos(Math.PI/67);
-	sinc = 1, cosc=0, sind = Math.sin(Math.PI/41), cosd=Math.cos(Math.PI/41);
-	sine = 1, cose=0, sinf = Math.sin(Math.PI/7), cosf=Math.cos(Math.PI/7),
+	// sina = 1, cosa=0, sinb = Math.sin(Math.PI/67), cosb=Math.cos(Math.PI/67);
+	// sinc = 1, cosc=0, sind = Math.sin(Math.PI/41), cosd=Math.cos(Math.PI/41);
+	// sine = 1, cose=0, sinf = Math.sin(Math.PI/7), cosf=Math.cos(Math.PI/7),
 
 	pointCloud = new PointCloud(16000,	new Vector3D(imageData.width /2, imageData.height/2, 600),
 										new Vector3D(1024,1024,1024)),
