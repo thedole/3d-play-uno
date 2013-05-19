@@ -82,10 +82,8 @@ var Vector3D = function(x, y, z) {
 var Vertex = function(center, offset) {
 	this.center = center;
 	this.offset = offset;
-	
 
-	this.draw = function(imageData, color, viewPos, magnitudecolorinfluence){
-		
+	this.draw = function(imageData, color, viewPos){
 		if(this.posZ < 0){
 			return;
 		}
@@ -96,24 +94,23 @@ var Vertex = function(center, offset) {
 		if (0 >= screenX || screenX > width){
 			return;
 		}
-			
-			var screenY = this.calcScreenCoord(this.posY, viewPos.y);
-			if (0 >= screenY || screenY > imageData.height){
-				return;
-			}
+		var screenY = this.calcScreenCoord(this.posY, viewPos.y);
+		if (0 >= screenY || screenY > imageData.height){
+			return;
+		}
 
-			this.r = color[0];
-			this.g = color[1];
-			this.b = color[2];
-			this.alpha = Math.floor(color[3] - (this.magnitude*magnitudecolorinfluence/683));
+		this.r = color[0];
+		this.g = color[1];
+		this.b = color[2];
+		this.alpha = color[3];
 
-			var xi = screenX * 4;
-			var yi = screenY * (width * 4);
+		var xi = screenX * 4;
+		var yi = screenY * (width * 4);
 
-			data[xi + yi] = this.r;
-			data[xi + yi + 1] = this.g;
-			data[xi + yi + 2] = this.b;
-			data[xi + yi + 3] = this.alpha;
+		data[xi + yi] = this.r;
+		data[xi + yi + 1] = this.g;
+		data[xi + yi + 2] = this.b;
+		data[xi + yi + 3] = this.alpha;
 	};
 
 	this.calcScreenCoord = function(pos, viewpos){
@@ -134,43 +131,6 @@ var Vertex = function(center, offset) {
 	this.posZ = this.center.z + this.offset.z;
 	this.magnitude = offset.magnitude;
 };
-
-var Cuboid = function(center, size){
-	this.center = center;
-	this.size = size;
-	this.halfWidth = this.size.x/2;
-	this.halfHeight = this.size.y/2;
-	this.halfDepth = this.size.z/2;
-	this.vertices = [];
-
-	this.draw = function (imageData, color) {
-		for (var i = this.vertices.length - 1; i >= 0; i--) {
-			this.vertices[i].draw(imageData, color);
-		}
-	};
-
-	this.initializeVertices = function(){
-		this.vertices.push(new Vertex(center, new Vector3D(-this.halfWidth, -this.halfHeight, -this.halfDepth)));
-		this.vertices.push(new Vertex(center, new Vector3D(-this.halfWidth, -this.halfHeight, +this.halfDepth)));
-		this.vertices.push(new Vertex(center, new Vector3D(-this.halfWidth, this.halfHeight, -this.halfDepth)));
-		this.vertices.push(new Vertex(center, new Vector3D(-this.halfWidth, this.halfHeight, this.halfDepth)));
-
-		this.vertices.push(new Vertex(center, new Vector3D(this.halfWidth, -this.halfHeight, -this.halfDepth)));
-		this.vertices.push(new Vertex(center, new Vector3D(this.halfWidth, -this.halfHeight, this.halfDepth)));
-		this.vertices.push(new Vertex(center, new Vector3D(this.halfWidth, this.halfHeight, -this.halfDepth)));
-		this.vertices.push(new Vertex(center, new Vector3D(this.halfWidth, this.halfHeight, this.halfDepth)));
-	};
-
-	this.transform = function(matrix){
-		this.vertices.forEach(function(vertex){
-			vertex.transform(matrix);
-		});
-		return this;
-	};
-
-	this.initializeVertices();
-};
-
 var PointCloud = function(n, center, size){
 	this.center = center;
 	this.size = size;
@@ -185,16 +145,12 @@ var PointCloud = function(n, center, size){
 
 	for (var i = n; i; i--) {
 		this.vertices.push(new Vertex(center,new Vector3D().normalize().scale(Math.random()*this.halfWidth)
-											));
+			));
 	}
 
 	this.draw = function(imageData, color, viewPos){
-		this.tmpsina = this.sina*this.cosb+this.cosa*this.sinb;
-		this.cosa = this.cosa*this.cosb - this.sina*this.sinb;
-		this.sina = this.tmpsina;
-		var magnitudefactor = ((this.sina+1)*100)|0;
 		this.vertices.forEach(function(vertex){
-			vertex.draw(imageData, color, viewPos, magnitudefactor);
+			vertex.draw(imageData, color, viewPos);
 		});
 	};
 
@@ -206,52 +162,143 @@ var PointCloud = function(n, center, size){
 	};
 };
 
+var Model3D = function(position, model){
+	this.draw = function(imageData, color, viewPos){
+		model.vertices.forEach(function(vertex){
+			vertex.draw(imageData, color, viewPos);
+		});
+	};
+
+	this.transform = function(matrix){
+		this.vertices.forEach(function(point){
+			point.transform(matrix);
+		});
+		return this;
+	};
+};
+
+var ModelDescription = function(name){
+	this.name = name,
+	this.vertices = [];
+	this.vertexnormals = [];
+	this.faces = [];
+	this.facenormals;
+	this.material;
+};
+
+var ObjModelReader = function(file, callback){
+	var that = this,
+	models = [],
+	mtllib = '',
+	lineHandlers = {
+		'#': function(){return;},
+		'mtllib': function(name){this.mtllib = name;},
+		'o': function(name){models.push(new ModelDescription(name));},
+		'v': function(x, y, z){
+			if(!models.length){
+				return;
+			}
+			models[models.length - 1].vertices.push([x, y, z]);
+		},
+		'usemtl': function(name){
+			if(!models.length){
+				return;
+			}
+			models[models.length - 1].material = name;
+		},
+		'f': function(){
+			if(!models.length){
+				return;
+			}
+			var vertices = [];
+			Array.prototype.forEach.call(arguments, function(v){
+				if(v < 0){
+					v = models[models.length - 1].vertices.length + v;
+				}
+
+				vertices.push(v);
+			});
+			models[models.length - 1].faces.push(vertices);
+		}
+	};
+
+	this.getModels = function(){
+		return models;
+	};
+
+	if (file) {
+		var r = new FileReader();
+		r.onload = function(e) {
+			var contents = e.target.result.match(/^.*$/gm);
+			contents.forEach(
+				function(line){
+					var parts = line.split(/\s+/),
+					keyword = parts.shift();
+					if(!lineHandlers.hasOwnProperty(keyword)){
+						return;
+					}
+
+					lineHandlers[keyword].apply(that, parts);
+				}
+				);
+				callback(models);	
+		};
+		r.readAsText(file);
+	} else {
+		alert("Failed to load file");
+	}
+};
+
 var canvas = document.getElementById('canvas'),
-    context = canvas.getContext('2d'),
+context = canvas.getContext('2d'),
 
-    baseImageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height),
-	imageData = baseImageData,
-	blackScreen = [],
+baseImageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height),
+imageData = baseImageData,
+blackScreen = [],
 
-	tmpsina, tmpsinc, tmpsine,
+tmpsina, tmpsinc, tmpsine,
 
 
-	angleX = Math.PI/128
-	angleY = Math.PI/512,
-	angleZ = Math.PI/256,
+angleX = Math.PI/128,
+angleY = Math.PI/512,
+angleZ = Math.PI/256,
 
-	x = new Matrix([[1,0,0],
-					[0, Math.cos(angleX),-Math.sin(angleX)],
-					[0, Math.sin(angleX),Math.cos(angleX),0]]),
-	y = new Matrix([[Math.cos(angleY),0,Math.sin(angleY)],
-					[0,1,0],
-					[-Math.sin(angleY),0,Math.cos(angleY)]]),
-	z = new Matrix([[Math.cos(angleZ),-Math.sin(angleZ),0],
-					[Math.sin(angleZ),Math.cos(angleZ),0],
-					[0,0,1]]),
-	rotationMatrix = x.multiply(y).multiply(z),
+x = new Matrix([[1,0,0],
+	[0, Math.cos(angleX),-Math.sin(angleX)],
+	[0, Math.sin(angleX),Math.cos(angleX),0]]),
+y = new Matrix([[Math.cos(angleY),0,Math.sin(angleY)],
+	[0,1,0],
+	[-Math.sin(angleY),0,Math.cos(angleY)]]),
+z = new Matrix([[Math.cos(angleZ),-Math.sin(angleZ),0],
+	[Math.sin(angleZ),Math.cos(angleZ),0],
+	[0,0,1]]),
+rotationMatrix = x.multiply(y).multiply(z),
 	// sina = 1, cosa=0, sinb = Math.sin(Math.PI/67), cosb=Math.cos(Math.PI/67);
 	// sinc = 1, cosc=0, sind = Math.sin(Math.PI/41), cosd=Math.cos(Math.PI/41);
 	// sine = 1, cose=0, sinf = Math.sin(Math.PI/7), cosf=Math.cos(Math.PI/7),
 
-	pointCloud = new PointCloud(16000,	new Vector3D(imageData.width /2, imageData.height/2, 600),
-										new Vector3D(1024,1024,1024)),
-
-	viewPos = new Vector3D(imageData.width/2, imageData.height/2, -1024);
+	// pointCloud = new PointCloud(16000,	new Vector3D(imageData.width /2, imageData.height/2, 600),
+	// 									new Vector3D(1024,1024,1024)),
+modelDescription = {
+	name: 'testCube',
+	vertices: []
+},
+model = new Model3D(),
+viewPos = new Vector3D(imageData.width/2, imageData.height/2, -1024);
 
 
 function draw() {
 	context.clearRect(0, 0, imageData.width, imageData.height);
 	imageData = context.getImageData(0, 0, imageData.width, imageData.height);
 	//pointCloud.draw(imageData, [(127*(1+sina))|0,(127*(1+sinc))|0,(127*(1+sine))|0,255], viewPos);
-	pointCloud.draw(imageData, [255,127,255, 255], viewPos);
+	//pointCloud.draw(imageData, [255,127,255, 255], viewPos);
 	context.putImageData(imageData, 0, 0);
 	pointCloud.transform(rotationMatrix);
 
 	// tmpsina = sina*cosb+cosa*sinb;
 	// cosa = cosa*cosb - sina*sinb;
 	// sina = tmpsina;
-	
+
 	// tmpsinc = sinc*cosd+cosc*sind;
 	// cosc = cosc*cosd - sinc*sind;
 	// sinc = tmpsinc;
@@ -261,7 +308,44 @@ function draw() {
 	// sine = tmpsine;
 
 	//console.log(sina);
-	setTimeout(draw, 0);
+	//setTimeout(draw, 0);
 }
 
-draw();
+var model,
+inputElement = document.getElementById("fileselector");
+inputElement.addEventListener("change", loadmodel, false);
+function loadmodel(event) {
+	var fileList = event.target.files,
+	file,
+	extension,
+	model,
+	reader;
+
+	/* now you can work with the file list */
+	if (!fileList || Object.prototype.toString.call(fileList) !== '[object FileList]'){
+		return;
+	}
+	// May need to change this later for loading materials as well
+	if(fileList.length !== 1){
+		return;
+	}
+
+	file = fileList[0];
+	extension = file.name.split('.').pop();
+	if(!extension){
+		return;
+	}
+
+	switch(extension){
+		case 'obj':
+		reader = new ObjModelReader(file, function(models){
+			models.forEach(
+				function(model){alert(model.name);}
+				);
+		});
+		break;
+	}
+}
+
+
+//draw();

@@ -9,8 +9,12 @@
             text-align: center;
          }
 
-         #canvas {
-            
+         input{
+          background: #cccccc;
+          border: inset #999999;
+         }
+
+         #canvas {           
             margin: 10px auto;
             padding: 10px;
             background: #000000;
@@ -19,11 +23,15 @@
    </head>
 
   <body>
-    
-    <canvas id='canvas' width='1366' height='768'>
+      <header>
+          <h1>Canvas play</h1>
+      </header>
+    <section>
+      <input type="file" id="fileselector"> 
+    </section>
+    <canvas id='canvas' width='800' height='600'>
       Canvas not supported
     </canvas>
-
     <script src='./script/play.js'></script>
   </body>
 </html>
