@@ -27,54 +27,55 @@ var Matrix = function(data){
 	};
 };
 
-var Vector3D = function(x, y, z) {
+var Vector3D = function(components) {
 	this.transform = function(matrix){
-		var result = [0,0,0],
+		var result = new Float64Array([0,0,0]),
 		data = matrix.data;
 
-		result[0] += data[0][0] * this.x;
-		result[0] += data[0][1] * this.y;
-		result[0] += data[0][2] * this.z;
+		result[0] += data[0][0] * this.components[0];
+		result[0] += data[0][1] * this.components[1];
+		result[0] += data[0][2] * this.components[2];
 
-		result[1] += data[1][0] * this.x;
-		result[1] += data[1][1] * this.y;
-		result[1] += data[1][2] * this.z;
+		result[1] += data[1][0] * this.components[0];
+		result[1] += data[1][1] * this.components[1];
+		result[1] += data[1][2] * this.components[2];
 
-		result[2] += data[2][0] * this.x;
-		result[2] += data[2][1] * this.y;
-		result[2] += data[2][2] * this.z;
+		result[2] += data[2][0] * this.components[0];
+		result[2] += data[2][1] * this.components[1];
+		result[2] += data[2][2] * this.components[2];
 
 
-		this.x = result[0];
-		this.y = result[1];
-		this.z = result[2];
+		this.components[0] = result[0];
+		this.components[1] = result[1];
+		this.components[2] = result[2];
 	};
 
 	this.normalize = function(){
-		this.x = this.x/this.magnitude;
-		this.y = this.y/this.magnitude;
-		this.z = this.z/this.magnitude;
+		this.components[0] = this.components[0]/this.magnitude;
+		this.components[1] = this.components[1]/this.magnitude;
+		this.components[2] = this.components[2]/this.magnitude;
 		this.magnitude = this.calcMagnitude();
 
 		return this;
 	};
 
 	this.scale = function(scalar){
-		this.x = this.x*scalar;
-		this.y = this.y*scalar;
-		this.z = this.z*scalar;
+		this.components[0] = this.components[0]*scalar;
+		this.components[1] = this.components[1]*scalar;
+		this.components[2] = this.components[2]*scalar;
 		this.magnitude = this.calcMagnitude();
 
 		return this;
 	};
 
 	this.calcMagnitude = function(){
-		return Math.sqrt((this.x * this.x) + (this.y * this.y) + (this.z * this.z));
+		return Math.sqrt((this.components[0] * this.components[0]) + (this.components[1] * this.components[1]) + (this.components[2] * this.components[2]));
 	};
 
-	this.x = x || Math.random()*2-1;
-	this.y = y || Math.random()*2-1;
-	this.z = z || Math.random()*2-1;
+	this.components = components;
+	this.components[0] = components[0] || Math.random()*2-1;
+	this.components[1] = components[1] || Math.random()*2-1;
+	this.components[2] = components[2] || Math.random()*2-1;
 
 	this.magnitude = this.calcMagnitude();
 };
@@ -198,19 +199,19 @@ var Model3D = function(position, vertices, faces, perfacevertexcount, name){
 		yi;
 
 		for (var i = count - 1; i >= 0; i--) {
-			x = offset.x + this.vertices[face[i]*3];
-			y = offset.y + this.vertices[face[i]*3 + 1];
-			z = offset.z + this.vertices[face[i]*3 + 2];
+			x = offset.components[0] + this.vertices[face[i]*3];
+			y = offset.components[1] - this.vertices[face[i]*3 + 1];
+			z = offset.components[2] + this.vertices[face[i]*3 + 2];
 
 			if(z < 0){
 				return;
 			}
 
-			screenX = this.calcScreenCoord(z, x, viewPos.x);
+			screenX = this.calcScreenCoord(z, x, viewPos.components[0]);
 			if (0 >= screenX || screenX > width){
 				return;
 			}
-			screenY = this.calcScreenCoord(z, y, viewPos.y);
+			screenY = this.calcScreenCoord(z, y, viewPos.components[1]);
 			if (0 >= screenY || screenY > imageData.height){
 				return;
 			}
@@ -232,7 +233,7 @@ var Model3D = function(position, vertices, faces, perfacevertexcount, name){
 	};
 
 	this.calcScreenCoord = function(z, pos, viewpos){
-		return Math.floor(((pos - viewpos)/(z - viewPos.z)) * -viewPos.z + viewpos);
+		return Math.floor(((pos - viewpos)/(z - viewPos.components[2])) * -viewPos.components[2] + viewpos);
 	};
 
 	this.transform = function(matrix){
@@ -303,7 +304,7 @@ rotationMatrix = x.multiply(y).multiply(z),
 		vertices: []
 	},
 	color = [0,0,0, 255],
-	viewPos = new Vector3D(imageData.width/2, imageData.height/2, -1024);
+	viewPos = new Vector3D(new Float64Array([imageData.width/2, imageData.height/2, -1024]));
 
 
 	function draw(models) {
@@ -311,7 +312,7 @@ rotationMatrix = x.multiply(y).multiply(z),
 		imageData = context.getImageData(0, 0, imageData.width, imageData.height);
 		models.forEach(
 			function(model){
-				model.position = new Vector3D(400,400,400);
+				model.position = new Vector3D(new Float64Array([400,400,400]));
 				model.draw(imageData, color, viewPos);
 				model.transform(rotationMatrix);
 			}
