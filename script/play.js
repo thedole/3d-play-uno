@@ -221,12 +221,19 @@ var Model3D = function(position, vertices, faces, perfacevertexcount, name){
 		y,
 		z,
 		xi,
-		yi;
+		yi,
+		faceIndex,
+		screenPoints = new Uint16Array(count*2),
+		currentPointIndex=0,
+		currentCoordinateIndex=0,
+		noPoints,
+		drawLine = DOK.drawLine;
 
 		for (var i = count - 1; i >= 0; i--) {
-			x = offset.components[0] + this.vertices[face[i]*3];
-			y = offset.components[1] - this.vertices[face[i]*3 + 1];
-			z = offset.components[2] + this.vertices[face[i]*3 + 2];
+			faceIndex = face[i]*3;
+			x = offset.components[0] + this.vertices[faceIndex];
+			y = offset.components[1] - this.vertices[faceIndex + 1];
+			z = offset.components[2] + this.vertices[faceIndex + 2];
 
 			if(z < 0){
 				return;
@@ -246,14 +253,27 @@ var Model3D = function(position, vertices, faces, perfacevertexcount, name){
 			this.b = color[2];
 			this.alpha = color[3];
 
-			xi = screenX * 4;
-			yi = screenY * (width * 4);
+			// xi = screenX << 2;
+			// yi = screenY * (width << 2);
 
-			data[xi + yi] = this.r;
-			data[xi + yi + 1] = this.g;
-			data[xi + yi + 2] = this.b;
-			data[xi + yi + 3] = this.alpha;
+			screenPoints[currentCoordinateIndex++] = screenX;
+			screenPoints[currentCoordinateIndex++] = screenY;
+			if (++currentPointIndex !==1) {
+				drawLine(screenPoints.subarray(currentCoordinateIndex - 4, currentCoordinateIndex), imageData, color);
+			}
+
+			// data[xi + yi] = this.r;
+			// data[xi + yi + 1] = this.g;
+			// data[xi + yi + 2] = this.b;
+			// data[xi + yi + 3] = this.alpha;
 			//console.log('x: ' + screenX + ' y: ' + screenY);
+		}
+		if(currentPointIndex > 1 && currentCoordinateIndex === screenPoints.length){
+			currentCoordinateIndex-=2;
+			drawLine(new Uint16Array([
+				screenPoints[currentCoordinateIndex++],
+				screenPoints[currentCoordinateIndex],
+				screenPoints[0],screenPoints[1]]), imageData, color);
 		}
 	};
 
@@ -338,7 +358,7 @@ rotationMatrix = x.multiply(y).multiply(z),
 		imageData = context.getImageData(0, 0, imageData.width, imageData.height);
 		models.forEach(
 			function(model){
-				model.position = new Vector3D(new Float64Array([400,400,400]));
+				model.position = new Vector3D(new Float64Array([400,400,600]));
 				model.draw(imageData, color, viewPos);
 				model.transform(rotationMatrix);
 			}
