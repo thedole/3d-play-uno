@@ -498,5 +498,6 @@ return function(coordinates, imageData, color){
 				drawSteep(startX * 4 + startY * (width * 4), screenBuffer, color, deltaX, deltaY, absX, absY, width, deltaError);
 				return;
 			}
+		screenBuffer = null;	
 		};
 	})();

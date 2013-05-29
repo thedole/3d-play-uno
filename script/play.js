@@ -1,27 +1,27 @@
 (function() {
-	var lastTime = 0;
-	var vendors = ['ms', 'moz', 'webkit', 'o'];
-	for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-		window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-		window.cancelRequestAnimationFrame = window[vendors[x]+
-		'CancelRequestAnimationFrame'];
-	}
+    var lastTime = 0;
+    var vendors = ['ms', 'moz', 'webkit', 'o'];
+    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+        window.cancelRequestAnimationFrame = window[vendors[x]+
+          'CancelRequestAnimationFrame'];
+    }
 
-	if (!window.requestAnimationFrame)
-		window.requestAnimationFrame = function(callback, element) {
-			var currTime = new Date().getTime();
-			var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-			var id = window.setTimeout(function() { callback(currTime + timeToCall); },
-				timeToCall);
-			lastTime = currTime + timeToCall;
-			return id;
-		};
+    if (!window.requestAnimationFrame)
+        window.requestAnimationFrame = function(callback, element) {
+            var currTime = new Date().getTime();
+            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+            var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
+              timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        };
 
-		if (!window.cancelAnimationFrame)
-			window.cancelAnimationFrame = function(id) {
-				clearTimeout(id);
-			};
-		}());
+    if (!window.cancelAnimationFrame)
+        window.cancelAnimationFrame = function(id) {
+            clearTimeout(id);
+        };
+}());
 
 var Matrix = function(data){
 	this.data = data;
@@ -142,7 +142,7 @@ var ObjModelReader = function(file, callback){
 			}
 			var vertices = [];
 			Array.prototype.forEach.call(arguments, function(vertexindex){
-				vertexindex = vertexindex < 0 ?
+				vertexindex = vertexindex < 0 ? 
 					modeldescriptors[modeldescriptors.length - 1].vertices.length + vertexindex
 					: vertexindex - 1;
 				vertices.push(vertexindex);
@@ -176,8 +176,10 @@ var ObjModelReader = function(file, callback){
 					var vertexdata = new Float64Array([].concat.apply([], descriptor.vertices));
 					var faces = new Uint16Array([].concat.apply([], descriptor.faces));
 					var vcount = new Uint8Array(descriptor.perfacevertexcount);
-					models.push(new Model3D([0,0,0], vertexdata, faces, vcount, descriptor.name));
+					models.push(new Model3D(objPos, vertexdata, faces, vcount, descriptor.name, drawLine));
 				});
+			drawLine = null;
+			objPos = null;
 			callback(models);
 		};
 		r.readAsText(file);
@@ -186,12 +188,13 @@ var ObjModelReader = function(file, callback){
 	}
 };
 
-var Model3D = function(position, vertices, faces, perfacevertexcount, name){
+var Model3D = function(position, vertices, faces, perfacevertexcount, name, drawLine){
 	this.name = name;
 	this.position = position;
 	this.vertices = vertices;
 	this.faces = faces;
 	this.perfacevertexcount = perfacevertexcount;
+	this.drawLine = drawLine;
 
 	this.draw = function(imageData, color, viewPos){
 		var vertices = this.vertices,
@@ -209,10 +212,13 @@ var Model3D = function(position, vertices, faces, perfacevertexcount, name){
 			faceStartIndex = faceEndIndex;
 			this.drawFace(face, vertexcount, imageData, color, viewPos);
 		} while(faceStartIndex < faceslength);
+		vertices = null;
+		faceslength = null;
 	};
 
 	this.drawFace = function(face, count, imageData, color, viewPos){
-		var offset = this.position,
+		var offset = this.position.components,
+		view = viewPos.components,
 		width = imageData.width,
 		data = imageData.data,
 		screenX,
@@ -227,23 +233,23 @@ var Model3D = function(position, vertices, faces, perfacevertexcount, name){
 		currentPointIndex=0,
 		currentCoordinateIndex=0,
 		noPoints,
-		drawLine = DOK.drawLine;
+		line = this.drawLine;
 
 		for (var i = count - 1; i >= 0; i--) {
 			faceIndex = face[i]*3;
-			x = offset.components[0] + this.vertices[faceIndex];
-			y = offset.components[1] - this.vertices[faceIndex + 1];
-			z = offset.components[2] + this.vertices[faceIndex + 2];
+			x = offset[0] + this.vertices[faceIndex];
+			y = offset[1] - this.vertices[faceIndex + 1];
+			z = offset[2] + this.vertices[faceIndex + 2];
 
 			if(z < 0){
 				return;
 			}
 
-			screenX = this.calcScreenCoord(z, x, viewPos.components[0]);
+			screenX = this.calcScreenCoord(z, x, view[0]);
 			if (0 >= screenX || screenX > width){
 				return;
 			}
-			screenY = this.calcScreenCoord(z, y, viewPos.components[1]);
+			screenY = this.calcScreenCoord(z, y, view[1]);
 			if (0 >= screenY || screenY > imageData.height){
 				return;
 			}
@@ -259,7 +265,7 @@ var Model3D = function(position, vertices, faces, perfacevertexcount, name){
 			screenPoints[currentCoordinateIndex++] = screenX;
 			screenPoints[currentCoordinateIndex++] = screenY;
 			if (++currentPointIndex !==1) {
-				drawLine(screenPoints.subarray(currentCoordinateIndex - 4, currentCoordinateIndex), imageData, color);
+				line(screenPoints.subarray(currentCoordinateIndex - 4, currentCoordinateIndex), imageData, color);
 			}
 
 			// data[xi + yi] = this.r;
@@ -270,11 +276,18 @@ var Model3D = function(position, vertices, faces, perfacevertexcount, name){
 		}
 		if(currentPointIndex > 1 && currentCoordinateIndex === screenPoints.length){
 			currentCoordinateIndex-=2;
-			drawLine(new Uint16Array([
+			line(new Uint16Array([
 				screenPoints[currentCoordinateIndex++],
 				screenPoints[currentCoordinateIndex],
 				screenPoints[0],screenPoints[1]]), imageData, color);
 		}
+
+		offset = null;
+		view = null;
+		width = null;
+		data = null;
+		screenPoints = null;
+		line = null;
 	};
 
 	this.calcScreenCoord = function(z, pos, viewpos){
@@ -284,7 +297,7 @@ var Model3D = function(position, vertices, faces, perfacevertexcount, name){
 	this.transform = function(matrix){
 		var index = 0,
 		endindex,
-		verticeslength = this.vertices.length;
+		verticeslength = vertices.length;
 
 		do{
 			endindex = index + 3;
@@ -323,11 +336,13 @@ context = canvas.getContext('2d'),
 baseImageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height),
 imageData = baseImageData,
 blackScreen = [],
-tmpsina, tmpsinc, tmpsine,
 
-angleX = Math.PI/67,
-angleY = Math.PI/79,
-angleZ = Math.PI/229,
+tmpsina, tmpsinc, tmpsine,
+drawLine = DOK.drawLine,
+
+angleX = Math.PI/128,
+angleY = Math.PI/512,
+angleZ = Math.PI/256,
 
 x = new Matrix([[1,0,0],
 	[0, Math.cos(angleX),-Math.sin(angleX)],
@@ -338,15 +353,19 @@ y = new Matrix([[Math.cos(angleY),0,Math.sin(angleY)],
 z = new Matrix([[Math.cos(angleZ),-Math.sin(angleZ),0],
 	[Math.sin(angleZ),Math.cos(angleZ),0],
 	[0,0,1]]),
-
-rotationMatrix = z.multiply(x).multiply(y),
+rotationMatrix = x.multiply(y).multiply(z),
 	// sina = 1, cosa=0, sinb = Math.sin(Math.PI/67), cosb=Math.cos(Math.PI/67);
 	// sinc = 1, cosc=0, sind = Math.sin(Math.PI/41), cosd=Math.cos(Math.PI/41);
 	// sine = 1, cose=0, sinf = Math.sin(Math.PI/7), cosf=Math.cos(Math.PI/7),
-
+	modelDescription = {
+		name: 'testCube',
+		vertices: []
+	},
 	color = [0,0,0, 255],
-	viewPos = new Vector3D(new Float64Array([imageData.width/2, imageData.height/2, -1024])),
-	modelPos = new Vector3D(new Float64Array([400,400,550]));
+	objPos = new Vector3D(new Float64Array([400,400,600])),
+	viewPos = new Vector3D(new Float64Array([imageData.width/2, imageData.height/2, -1024]));
+	DOK.drawLine = null;
+	DOK = null;
 
 
 	function draw(models) {
@@ -359,13 +378,12 @@ rotationMatrix = z.multiply(x).multiply(y),
 				model.transform(rotationMatrix);
 			}
 			);
-		context.putImageData(imageData, 0, 0);
+		context.putImageData(imageData, 0, 0);		
 	}
 
 	var model,
 	inputElement = document.getElementById("fileselector");
 	inputElement.addEventListener("change", loadmodel, false);
-
 	function loadmodel(event) {
 		var fileList = event.target.files,
 		file,
@@ -377,27 +395,24 @@ rotationMatrix = z.multiply(x).multiply(y),
 		if (!fileList || Object.prototype.toString.call(fileList) !== '[object FileList]'){
 			return;
 		}
-		// May need to change this later for loading materials as well
-		if(fileList.length !== 1){
-			return;
-		}
+	// May need to change this later for loading materials as well
+	if(fileList.length !== 1){
+		return;
+	}
 
-		file = fileList[0];
-		extension = file.name.split('.').pop();
-		if(!extension){
-			return;
-		}
+	file = fileList[0];
+	extension = file.name.split('.').pop();
+	if(!extension){
+		return;
+	}
 
-		switch(extension){
-			case 'obj':
-			reader = new ObjModelReader(file, function(models){
-				models.forEach(function(m){
-					m.position = modelPos;
-				});
-				draw(models);
-			});
-			break;
-		}
+	switch(extension){
+		case 'obj':
+		reader = new ObjModelReader(file, function(models){
+			draw(models);
+		});
+		break;
+	}
 }
 
 
