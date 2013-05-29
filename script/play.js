@@ -1,27 +1,27 @@
 (function() {
-    var lastTime = 0;
-    var vendors = ['ms', 'moz', 'webkit', 'o'];
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelRequestAnimationFrame = window[vendors[x]+
-          'CancelRequestAnimationFrame'];
-    }
+	var lastTime = 0;
+	var vendors = ['ms', 'moz', 'webkit', 'o'];
+	for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+		window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+		window.cancelRequestAnimationFrame = window[vendors[x]+
+		'CancelRequestAnimationFrame'];
+	}
 
-    if (!window.requestAnimationFrame)
-        window.requestAnimationFrame = function(callback, element) {
-            var currTime = new Date().getTime();
-            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
-              timeToCall);
-            lastTime = currTime + timeToCall;
-            return id;
-        };
+	if (!window.requestAnimationFrame)
+		window.requestAnimationFrame = function(callback, element) {
+			var currTime = new Date().getTime();
+			var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+			var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+				timeToCall);
+			lastTime = currTime + timeToCall;
+			return id;
+		};
 
-    if (!window.cancelAnimationFrame)
-        window.cancelAnimationFrame = function(id) {
-            clearTimeout(id);
-        };
-}());
+		if (!window.cancelAnimationFrame)
+			window.cancelAnimationFrame = function(id) {
+				clearTimeout(id);
+			};
+		}());
 
 var Matrix = function(data){
 	this.data = data;
@@ -142,7 +142,7 @@ var ObjModelReader = function(file, callback){
 			}
 			var vertices = [];
 			Array.prototype.forEach.call(arguments, function(vertexindex){
-				vertexindex = vertexindex < 0 ? 
+				vertexindex = vertexindex < 0 ?
 					modeldescriptors[modeldescriptors.length - 1].vertices.length + vertexindex
 					: vertexindex - 1;
 				vertices.push(vertexindex);
@@ -323,13 +323,11 @@ context = canvas.getContext('2d'),
 baseImageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height),
 imageData = baseImageData,
 blackScreen = [],
-
 tmpsina, tmpsinc, tmpsine,
 
-
-angleX = Math.PI/128,
-angleY = Math.PI/512,
-angleZ = Math.PI/256,
+angleX = Math.PI/67,
+angleY = Math.PI/79,
+angleZ = Math.PI/229,
 
 x = new Matrix([[1,0,0],
 	[0, Math.cos(angleX),-Math.sin(angleX)],
@@ -340,16 +338,15 @@ y = new Matrix([[Math.cos(angleY),0,Math.sin(angleY)],
 z = new Matrix([[Math.cos(angleZ),-Math.sin(angleZ),0],
 	[Math.sin(angleZ),Math.cos(angleZ),0],
 	[0,0,1]]),
-rotationMatrix = x.multiply(y).multiply(z),
+
+rotationMatrix = z.multiply(x).multiply(y),
 	// sina = 1, cosa=0, sinb = Math.sin(Math.PI/67), cosb=Math.cos(Math.PI/67);
 	// sinc = 1, cosc=0, sind = Math.sin(Math.PI/41), cosd=Math.cos(Math.PI/41);
 	// sine = 1, cose=0, sinf = Math.sin(Math.PI/7), cosf=Math.cos(Math.PI/7),
-	modelDescription = {
-		name: 'testCube',
-		vertices: []
-	},
+
 	color = [0,0,0, 255],
-	viewPos = new Vector3D(new Float64Array([imageData.width/2, imageData.height/2, -1024]));
+	viewPos = new Vector3D(new Float64Array([imageData.width/2, imageData.height/2, -1024])),
+	modelPos = new Vector3D(new Float64Array([400,400,550]));
 
 
 	function draw(models) {
@@ -358,17 +355,17 @@ rotationMatrix = x.multiply(y).multiply(z),
 		imageData = context.getImageData(0, 0, imageData.width, imageData.height);
 		models.forEach(
 			function(model){
-				model.position = new Vector3D(new Float64Array([400,400,600]));
 				model.draw(imageData, color, viewPos);
 				model.transform(rotationMatrix);
 			}
 			);
-		context.putImageData(imageData, 0, 0);		
+		context.putImageData(imageData, 0, 0);
 	}
 
 	var model,
 	inputElement = document.getElementById("fileselector");
 	inputElement.addEventListener("change", loadmodel, false);
+
 	function loadmodel(event) {
 		var fileList = event.target.files,
 		file,
@@ -380,24 +377,27 @@ rotationMatrix = x.multiply(y).multiply(z),
 		if (!fileList || Object.prototype.toString.call(fileList) !== '[object FileList]'){
 			return;
 		}
-	// May need to change this later for loading materials as well
-	if(fileList.length !== 1){
-		return;
-	}
+		// May need to change this later for loading materials as well
+		if(fileList.length !== 1){
+			return;
+		}
 
-	file = fileList[0];
-	extension = file.name.split('.').pop();
-	if(!extension){
-		return;
-	}
+		file = fileList[0];
+		extension = file.name.split('.').pop();
+		if(!extension){
+			return;
+		}
 
-	switch(extension){
-		case 'obj':
-		reader = new ObjModelReader(file, function(models){
-			draw(models);
-		});
-		break;
-	}
+		switch(extension){
+			case 'obj':
+			reader = new ObjModelReader(file, function(models){
+				models.forEach(function(m){
+					m.position = modelPos;
+				});
+				draw(models);
+			});
+			break;
+		}
 }
 
 
