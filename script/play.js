@@ -234,6 +234,7 @@ Model3D.prototype = {
 		data = imageData.data,
 		screenX,
 		screenY,
+		deltaZ,
 		x,
 		y,
 		z,
@@ -255,39 +256,22 @@ Model3D.prototype = {
 			if(z < 0){
 				return;
 			}
-			//this.calcScreenCoord(z, x, view[0]);
-			//(z, pos, viewpos)
-			//var viewPosZ = viewPos.components[2];
-			//return Math.floor(((pos - viewpos)/(z - viewPosZ)) * -viewPosZ + viewpos);
-			screenX = Math.floor(((x - viewPosX)/(z - viewPosZ)) * -viewPosZ + viewPosX);
+			
+			deltaZ = z - viewPosZ;
+			screenX = Math.floor(((x - viewPosX)/deltaZ) * -viewPosZ + viewPosX);
 			if (0 >= screenX || screenX > width){
 				return;
 			}
-			screenY = Math.floor(((y - viewPosY)/(z - viewPosZ)) * -viewPosZ + viewPosY);
-			//this.calcScreenCoord(z, y, view[1]);
+			screenY = Math.floor(((y - viewPosY)/deltaZ) * -viewPosZ + viewPosY);
 			if (0 >= screenY || screenY > imageData.height){
 				return;
 			}
-
-			this.r = color[0];
-			this.g = color[1];
-			this.b = color[2];
-			this.alpha = color[3];
-
-			// xi = screenX << 2;
-			// yi = screenY * (width << 2);
 
 			screenPoints[currentCoordinateIndex++] = screenX;
 			screenPoints[currentCoordinateIndex++] = screenY;
 			if (++currentPointIndex !==1) {
 				line(screenPoints.subarray(currentCoordinateIndex - 4, currentCoordinateIndex), imageData, color);
 			}
-
-			// data[xi + yi] = this.r;
-			// data[xi + yi + 1] = this.g;
-			// data[xi + yi + 2] = this.b;
-			// data[xi + yi + 3] = this.alpha;
-			//console.log('x: ' + screenX + ' y: ' + screenY);
 		}
 		if(currentPointIndex > 1 && currentCoordinateIndex === screenPoints.length){
 			currentCoordinateIndex-=2;
