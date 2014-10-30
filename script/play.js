@@ -227,6 +227,9 @@ Model3D.prototype = {
 	drawFace: function(face, count, imageData, color, viewPos){
 		var offset = this.position.components,
 		view = viewPos.components,
+		viewPosX = view[0],
+		viewPosY = view[1],
+		viewPosZ = view[2],
 		width = imageData.width,
 		data = imageData.data,
 		screenX,
@@ -252,12 +255,16 @@ Model3D.prototype = {
 			if(z < 0){
 				return;
 			}
-
-			screenX = this.calcScreenCoord(z, x, view[0]);
+			//this.calcScreenCoord(z, x, view[0]);
+			//(z, pos, viewpos)
+			//var viewPosZ = viewPos.components[2];
+			//return Math.floor(((pos - viewpos)/(z - viewPosZ)) * -viewPosZ + viewpos);
+			screenX = Math.floor(((x - viewPosX)/(z - viewPosZ)) * -viewPosZ + viewPosX);
 			if (0 >= screenX || screenX > width){
 				return;
 			}
-			screenY = this.calcScreenCoord(z, y, view[1]);
+			screenY = Math.floor(((y - viewPosY)/(z - viewPosZ)) * -viewPosZ + viewPosY);
+			//this.calcScreenCoord(z, y, view[1]);
 			if (0 >= screenY || screenY > imageData.height){
 				return;
 			}
