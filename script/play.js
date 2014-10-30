@@ -379,18 +379,14 @@ rotationMatrix = x.multiply(y).multiply(z),
 	DOK = null;
 
 
-	function draw(models) {
+	function draw(model) {
 		var width = imageData.width,
 			height = imageData.height;
-		requestAnimationFrame(function(){draw(models);});
+		requestAnimationFrame(function(){draw(model);});
 		context.clearRect(0, 0, width, height);
 		imageData = context.getImageData(0, 0, width, height);
-		models.forEach(
-			function(model){
-				model.draw(imageData, color, viewPos);
-				model.transform(rotationMatrix);
-			}
-			);
+		model.draw(imageData, color, viewPos);
+		model.transform(rotationMatrix);
 		context.putImageData(imageData, 0, 0);		
 	}
 
@@ -422,7 +418,9 @@ rotationMatrix = x.multiply(y).multiply(z),
 	switch(extension){
 		case 'obj':
 		reader = new ObjModelReader(file, function(models){
-			draw(models);
+			if (models && models.length === 1) {
+				draw(models[0]);
+			};
 		});
 		break;
 	}
