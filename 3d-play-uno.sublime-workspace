@@ -4,6 +4,50 @@
 		"selected_items":
 		[
 			[
+				"fa",
+				"faceslength"
+			],
+			[
+				"s",
+				"screenBuffer"
+			],
+			[
+				"vie",
+				"viewPos  (argument)"
+			],
+			[
+				"pos",
+				"position"
+			],
+			[
+				"screen",
+				"screenX"
+			],
+			[
+				"cu",
+				"currentPointIndex"
+			],
+			[
+				"scr",
+				"screenPoints"
+			],
+			[
+				"c",
+				"count"
+			],
+			[
+				"Uint",
+				"Uint16Array"
+			],
+			[
+				"dra",
+				"drawLine"
+			],
+			[
+				"lin",
+				"lines"
+			],
+			[
 				"ve",
 				"vertexdata"
 			],
@@ -76,10 +120,6 @@
 				"posZ  (variable)"
 			],
 			[
-				"pos",
-				"posZKey"
-			],
-			[
 				"ca",
 				"cacheX"
 			],
@@ -116,10 +156,6 @@
 				"posZ"
 			],
 			[
-				"s",
-				"sqrt  (function)"
-			],
-			[
 				"ha",
 				"halfWidth"
 			],
@@ -135,24 +171,16 @@
 			"file": "script/play.js",
 			"settings":
 			{
-				"buffer_size": 9745,
+				"buffer_size": 12073,
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "models/blendercube.obj",
+			"file": "script/dokdraw.js",
 			"settings":
 			{
-				"buffer_size": 411,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "models/blendercube.mtl",
-			"settings":
-			{
-				"buffer_size": 198,
-				"line_ending": "Unix"
+				"buffer_size": 10951,
+				"line_ending": "Windows"
 			}
 		}
 	],
@@ -208,6 +236,9 @@
 	},
 	"file_history":
 	[
+		"/C/Users/thedole/Documents/Dropbox/javscriptFikling/canvasplay/uno/index.html",
+		"/C/Users/thedole/Documents/Dropbox/javscriptFikling/canvasplay/uno/models/blendercube.mtl",
+		"/C/Users/thedole/Documents/Dropbox/javscriptFikling/canvasplay/uno/models/blendercube.obj",
 		"/C/Users/thedole/Documents/Dropbox/javscriptFikling/canvasplay/uno/.gitignore",
 		"/C/Users/thedole/Documents/Dropbox/javscriptFikling/canvasplay/uno/script/.gitignore",
 		"/C/Users/thedole/Documents/Dropbox/javscriptFikling/canvasplay/uno/models/cube.dae",
@@ -256,6 +287,15 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"drawLine",
+			"DOK",
+			"components",
+			"this.vertices",
+			"viewPos.components",
+			"offset.components",
+			"currentPointIndex",
+			"screenPoints",
+			"face[i]*3",
 			"vertex",
 			"v",
 			"models",
@@ -333,15 +373,15 @@
 					"file": "script/play.js",
 					"settings":
 					{
-						"buffer_size": 9745,
+						"buffer_size": 12073,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6968,
-								6968
+								10948,
+								10948
 							]
 						],
 						"settings":
@@ -439,25 +479,25 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 3450.0,
+						"translation.y": 6397.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "models/blendercube.obj",
+					"file": "script/dokdraw.js",
 					"settings":
 					{
-						"buffer_size": 411,
+						"buffer_size": 10951,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								411,
-								411
+								6100,
+								6102
 							]
 						],
 						"settings":
@@ -551,125 +591,11 @@
 								"Ruby on Rails": "ruby"
 							},
 							"sublimelinter_wrap_find": true,
-							"syntax": "Packages/Text/Plain text.tmLanguage"
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "models/blendercube.mtl",
-					"settings":
-					{
-						"buffer_size": 198,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"annotations":
-							[
-								"TODO",
-								"README",
-								"FIXME"
-							],
-							"csslint_options":
-							{
-								"adjoining-classes": "warning",
-								"box-model": true,
-								"box-sizing": "warning",
-								"compatible-vendor-prefixes": "warning",
-								"display-property-grouping": true,
-								"duplicate-background-images": "warning",
-								"duplicate-properties": true,
-								"empty-rules": true,
-								"errors": true,
-								"fallback-colors": "warning",
-								"floats": "warning",
-								"font-faces": "warning",
-								"font-sizes": "warning",
-								"gradients": "warning",
-								"ids": "warning",
-								"import": "warning",
-								"important": "warning",
-								"known-properties": true,
-								"outline-none": "warning",
-								"overqualified-elements": "warning",
-								"qualified-headings": "warning",
-								"regex-selectors": "warning",
-								"rules-count": "warning",
-								"shorthand": "warning",
-								"star-property-hack": "warning",
-								"text-indent": "warning",
-								"underscore-property-hack": "warning",
-								"unique-headings": "warning",
-								"universal-selector": "warning",
-								"vendor-prefix": true,
-								"zero-units": "warning"
-							},
-							"gjslint_ignore":
-							[
-								110.0
-							],
-							"gjslint_options":
-							[
-							],
-							"javascript_linter": "jshint",
-							"jshint_options":
-							{
-								"browser": true,
-								"evil": true,
-								"regexdash": true,
-								"sub": true,
-								"trailing": true,
-								"wsh": true
-							},
-							"pep8": true,
-							"pep8_ignore":
-							[
-								"E501"
-							],
-							"perl_linter": "perlcritic",
-							"pyflakes_ignore":
-							[
-							],
-							"pyflakes_ignore_import_*": true,
-							"sublimelinter": true,
-							"sublimelinter_delay": 2.0,
-							"sublimelinter_disable":
-							[
-							],
-							"sublimelinter_executable_map":
-							{
-							},
-							"sublimelinter_fill_outlines": false,
-							"sublimelinter_gutter_marks": true,
-							"sublimelinter_gutter_marks_theme": "simple",
-							"sublimelinter_mark_style": "none",
-							"sublimelinter_notes": false,
-							"sublimelinter_objj_check_ascii": false,
-							"sublimelinter_popup_errors_on_save": false,
-							"sublimelinter_syntax_map":
-							{
-								"C++": "c",
-								"Python Django": "python",
-								"Ruby on Rails": "ruby"
-							},
-							"sublimelinter_wrap_find": true,
-							"syntax": "Packages/Text/Plain text.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 4962.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -726,6 +652,10 @@
 		"height": 500.0,
 		"selected_items":
 		[
+			[
+				"",
+				"/C/Users/thedole/Documents/Dropbox/javscriptFikling/canvasplay/uno/3d-play-uno.sublime-project"
+			]
 		],
 		"width": 380.0
 	},

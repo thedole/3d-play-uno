@@ -1,7 +1,8 @@
-(function() {
-    var lastTime = 0;
-    var vendors = ['ms', 'moz', 'webkit', 'o'];
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+(function () {
+    var lastTime = 0,
+    	vendors = ['ms', 'moz', 'webkit', 'o'],
+    	x;
+    for (x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
         window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
         window.cancelRequestAnimationFrame = window[vendors[x]+
           'CancelRequestAnimationFrame'];
@@ -25,16 +26,18 @@
 
 var Matrix = function(data){
 	this.data = data;
+};
 
-	this.rows = function(){
-		return data.length;
-	};
+Matrix.prototype = {
+	rows: function(){
+		return this.data.length;
+	},
 
-	this.columns = function(){
-		return data.length >= 1 ? data[0].length : 0;
-	};
+	columns: function(){
+		return this.data.length >= 1 ? this.data[0].length : 0;
+	},
 
-	this.multiply = function(m2){
+	multiply: function(m2){
 		var result = [[0,0,0],[0,0,0],[0,0,0]];
 		result[0][0] += this.data[0][0]*m2.data[0][0] + this.data[0][1]*m2.data[1][0] + this.data[0][2]*m2.data[2][0];
 		result[0][1] += this.data[0][0]*m2.data[0][1] + this.data[0][1]*m2.data[1][1] + this.data[0][2]*m2.data[2][1];
@@ -49,11 +52,21 @@ var Matrix = function(data){
 		result[2][2] += this.data[2][0]*m2.data[0][2] + this.data[2][1]*m2.data[1][2] + this.data[2][2]*m2.data[2][2];
 
 		return new Matrix(result);
-	};
+	}
 };
 
 var Vector3D = function(components) {
-	this.transform = function(matrix){
+
+	this.components = components;
+	this.components[0] = components[0] || Math.random()*2-1;
+	this.components[1] = components[1] || Math.random()*2-1;
+	this.components[2] = components[2] || Math.random()*2-1;
+
+	this.magnitude = this.calcMagnitude();
+};
+
+Vector3D.prototype = {
+	transform: function(matrix){
 		var result = new Float64Array([0,0,0]),
 		data = matrix.data;
 
@@ -73,36 +86,29 @@ var Vector3D = function(components) {
 		this.components[0] = result[0];
 		this.components[1] = result[1];
 		this.components[2] = result[2];
-	};
+	},
 
-	this.normalize = function(){
+	normalize: function(){
 		this.components[0] = this.components[0]/this.magnitude;
 		this.components[1] = this.components[1]/this.magnitude;
 		this.components[2] = this.components[2]/this.magnitude;
-		this.magnitude = this.calcMagnitude();
+		this.magnitude = calcMagnitude();
 
 		return this;
-	};
+	},
 
-	this.scale = function(scalar){
+	scale: function(scalar){
 		this.components[0] = this.components[0]*scalar;
 		this.components[1] = this.components[1]*scalar;
 		this.components[2] = this.components[2]*scalar;
-		this.magnitude = this.calcMagnitude();
+		this.magnitude = calcMagnitude();
 
 		return this;
-	};
+	},
 
-	this.calcMagnitude = function(){
+	calcMagnitude: function(){
 		return Math.sqrt((this.components[0] * this.components[0]) + (this.components[1] * this.components[1]) + (this.components[2] * this.components[2]));
-	};
-
-	this.components = components;
-	this.components[0] = components[0] || Math.random()*2-1;
-	this.components[1] = components[1] || Math.random()*2-1;
-	this.components[2] = components[2] || Math.random()*2-1;
-
-	this.magnitude = this.calcMagnitude();
+	}	
 };
 
 var ModelDescription = function(name){
@@ -195,8 +201,10 @@ var Model3D = function(position, vertices, faces, perfacevertexcount, name, draw
 	this.faces = faces;
 	this.perfacevertexcount = perfacevertexcount;
 	this.drawLine = drawLine;
+};
 
-	this.draw = function(imageData, color, viewPos){
+Model3D.prototype = {
+	draw: function(imageData, color, viewPos){
 		var vertices = this.vertices,
 		face,
 		faceStartIndex = 0,
@@ -206,17 +214,17 @@ var Model3D = function(position, vertices, faces, perfacevertexcount, name, draw
 		faceslength = this.faces.length;
 
 		do{
-			vertexcount = perfacevertexcount[vertexcountindex++];
+			vertexcount = this.perfacevertexcount[vertexcountindex++];
 			faceEndIndex = faceStartIndex + vertexcount;
-			face = faces.subarray(faceStartIndex, faceEndIndex);
+			face = this.faces.subarray(faceStartIndex, faceEndIndex);
 			faceStartIndex = faceEndIndex;
 			this.drawFace(face, vertexcount, imageData, color, viewPos);
 		} while(faceStartIndex < faceslength);
 		vertices = null;
 		faceslength = null;
-	};
+	},
 
-	this.drawFace = function(face, count, imageData, color, viewPos){
+	drawFace: function(face, count, imageData, color, viewPos){
 		var offset = this.position.components,
 		view = viewPos.components,
 		width = imageData.width,
@@ -288,25 +296,28 @@ var Model3D = function(position, vertices, faces, perfacevertexcount, name, draw
 		data = null;
 		screenPoints = null;
 		line = null;
-	};
+	},
 
-	this.calcScreenCoord = function(z, pos, viewpos){
-		return Math.floor(((pos - viewpos)/(z - viewPos.components[2])) * -viewPos.components[2] + viewpos);
-	};
+	calcScreenCoord: function(z, pos, viewpos){
+		var viewPosZ = viewPos.components[2];
+		return Math.floor(((pos - viewpos)/(z - viewPosZ)) * -viewPosZ + viewpos);
+	},
 
-	this.transform = function(matrix){
+	transform: function(matrix){
 		var index = 0,
 		endindex,
-		verticeslength = vertices.length;
+		vertices = this.vertices,
+		verticeslength = this.vertices.length,
+		transformVertex = this.transformVertex;
 
 		do{
 			endindex = index + 3;
 			vertex = vertices.subarray(index, endindex);
 			index = endindex;
-			this.transformVertex(vertex, matrix);
+			transformVertex(vertex, matrix);
 		} while(index < verticeslength);
-	};
-	this.transformVertex = function(vertex, matrix){
+	},
+	transformVertex: function(vertex, matrix){
 		var result = new Float64Array([0,0,0]);
 		data = matrix.data;
 
@@ -326,7 +337,7 @@ var Model3D = function(position, vertices, faces, perfacevertexcount, name, draw
 		vertex[1] = result[1];
 		vertex[2] = result[2];
 		return vertex;
-	};
+	}
 };
 
 
@@ -369,9 +380,11 @@ rotationMatrix = x.multiply(y).multiply(z),
 
 
 	function draw(models) {
+		var width = imageData.width,
+			height = imageData.height;
 		requestAnimationFrame(function(){draw(models);});
-		context.clearRect(0, 0, imageData.width, imageData.height);
-		imageData = context.getImageData(0, 0, imageData.width, imageData.height);
+		context.clearRect(0, 0, width, height);
+		imageData = context.getImageData(0, 0, width, height);
 		models.forEach(
 			function(model){
 				model.draw(imageData, color, viewPos);
