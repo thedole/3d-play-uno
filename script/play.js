@@ -204,7 +204,7 @@ var Model3D = function(position, vertices, faces, perfacevertexcount, name, draw
 };
 
 Model3D.prototype = {
-	draw: function(imageData, color, viewPos){
+	draw: function(color, viewPos){
 		var vertices = this.vertices,
 		face,
 		faceStartIndex = 0,
@@ -218,13 +218,13 @@ Model3D.prototype = {
 			faceEndIndex = faceStartIndex + vertexcount;
 			face = this.faces.subarray(faceStartIndex, faceEndIndex);
 			faceStartIndex = faceEndIndex;
-			this.drawFace(face, vertexcount, imageData, color, viewPos);
+			this.drawFace(face, vertexcount, color, viewPos);
 		} while(faceStartIndex < faceslength);
 		vertices = null;
 		faceslength = null;
 	},
 
-	drawFace: function(face, count, imageData, color, viewPos){
+	drawFace: function(face, count, color, viewPos){
 		var offset = this.position.components,
 		view = viewPos.components,
 		viewPosX = view[0],
@@ -287,11 +287,6 @@ Model3D.prototype = {
 		data = null;
 		screenPoints = null;
 		line = null;
-	},
-
-	calcScreenCoord: function(z, pos, viewpos){
-		var viewPosZ = viewPos.components[2];
-		return Math.floor(((pos - viewpos)/(z - viewPosZ)) * -viewPosZ + viewpos);
 	},
 
 	transform: function(matrix){
@@ -375,8 +370,8 @@ rotationMatrix = x.multiply(y).multiply(z),
 			height = imageData.height;
 		requestAnimationFrame(function(){draw(model);});
 		context.clearRect(0, 0, width, height);
-		imageData = context.getImageData(0, 0, width, height);
-		model.draw(imageData, color, viewPos);
+		//imageData = context.getImageData(0, 0, width, height);
+		model.draw(color, viewPos);
 		model.transform(rotationMatrix);
 		context.putImageData(imageData, 0, 0);		
 	}
