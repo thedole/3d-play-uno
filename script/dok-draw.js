@@ -1,11 +1,8 @@
-var DOK = DOK || {};
-
-
 /**********************************************
 	Line Drawing function that uses Bresenham
 	Line Drawing algorithm.
  **********************************************/
-DOK.drawLine =
+module.exports =
 (function(){
 	var x1 = 0,
 	y1 = 1,
