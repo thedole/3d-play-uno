@@ -424,7 +424,8 @@ return function drawLine(coordinates, imageData, color){
 	absX,
 	absY,
 	startX,
-	startY;
+	startY,
+	pos;
 
 			// Line is horizontal
 			if (deltaY === 0) {
@@ -547,6 +548,31 @@ module.exports = (function(){
   };
 })();
 },{}],3:[function(require,module,exports){
+module.exports = (function(){
+  return function(file, callback){
+    if (file) {
+      var r = new FileReader();
+
+      r.addEventListener('load', function(e) {
+        var contents = e.target.result.match(/^.*$/gm);
+        callback(contents);
+      }, false);
+
+      r.readAsText(file);
+    } else {
+      var error = {message: 'File is missing'};
+      if(callback && typeof callback === 'function'){
+        callback(null, error);
+      }
+      else
+      {
+        throw error;
+      }
+    }
+  }
+})();
+
+},{}],4:[function(require,module,exports){
 "use strict";
 module.exports = (function(){
   var matrixPrototype = {
@@ -591,13 +617,13 @@ module.exports = (function(){
   };
 })();
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 "use strict";
 module.exports = (function(){
 var
 	dokdraw = require('./dok-draw'),
 	model3DPrototype = {
-	draw: function(color, viewPos, imageData){
+	draw: function(color, pos, viewPos, imageData){
 		var vertices = this.vertices,
 		face,
 		faceStartIndex = 0,
@@ -611,14 +637,14 @@ var
 			faceEndIndex = faceStartIndex + vertexcount;
 			face = this.faces.subarray(faceStartIndex, faceEndIndex);
 			faceStartIndex = faceEndIndex;
-			this.drawFace(face, vertexcount, color, viewPos, imageData);
+			this.drawFace(face, vertexcount, color, pos, viewPos, imageData);
 		} while(faceStartIndex < faceslength);
 		vertices = null;
 		faceslength = null;
 	},
 
-	drawFace: function(face, count, color, viewPos, imageData){
-		var offset = this.position.components,
+	drawFace: function(face, count, color, pos, viewPos, imageData){
+		var offset = pos.components,
 		view = viewPos.components,
 		viewPosX = view[0],
 		viewPosY = view[1],
@@ -722,7 +748,6 @@ var
 },
 
 model3DCreate = function(
-	position,
 	vertices,
 	faces,
 	perfacevertexcount,
@@ -734,11 +759,6 @@ model3DCreate = function(
 				enumerable: true,
 				writable: true,
 				value: name
-			},
-			position: {
-				enumerable: true,
-				writable: true,
-				value: position
 			},
 			vertices: {
 				enumerable: true,
@@ -771,7 +791,7 @@ return {
 };
 })();
 
-},{"./dok-draw":1}],5:[function(require,module,exports){
+},{"./dok-draw":1}],6:[function(require,module,exports){
 "use strict";
 module.exports = (function(){
   return {
@@ -789,7 +809,7 @@ module.exports = (function(){
   }
 })();
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
 module.exports = (function(){
   var modelFactory = require('./model3d'),
@@ -855,41 +875,17 @@ module.exports = (function(){
             var vertexdata = new Float64Array([].concat.apply([], descriptor.vertices));
             var faces = new Uint16Array([].concat.apply([], descriptor.faces));
             var vcount = new Uint8Array(descriptor.perfacevertexcount);
-            var model = modelFactory.create(objPos, vertexdata, faces, vcount, descriptor.name);
+            var model = modelFactory.create(vertexdata, faces, vcount, descriptor.name);
             models.push(model);
           });
 
         if(callback && typeof callback === 'function'){
           callback(models);
         }
-      },
-
-      readFile: function(file, callback){
-        if (file) {
-          var modelReader = this,
-              readObjData = modelReader.readObjData,
-              r = new FileReader();
-
-          r.addEventListener('load', function(e) {
-            var contents = e.target.result.match(/^.*$/gm);
-            readObjData.call(modelReader, contents, callback);
-          }, false);
-
-          r.readAsText(file);
-        } else {
-          var error = {message: 'File is missing'};
-          if(callback && typeof callback === 'function'){
-            callback(null, error);
-          }
-          else
-          {
-            throw error;
-          }
-        }
       }
 },
 
-createModelReader = function(position){
+createModelReader = function(){
   return Object.create(modelReaderPrototype, {
     models: {
       enumerable: true,
@@ -905,11 +901,6 @@ createModelReader = function(position){
       enumerable: true,
       writable: true,
       value: ''
-    },
-    objPos: {
-      enumerable: true,
-      writable: true,
-      value: position
     }
   });
 }
@@ -919,7 +910,7 @@ return {
 }
 })();
 
-},{"./model3d":4,"./modeldescription":5}],7:[function(require,module,exports){
+},{"./model3d":5,"./modeldescription":6}],8:[function(require,module,exports){
 "use strict";
 var
   w = require('./request-animation-frame-polyfill')(window),
@@ -929,6 +920,7 @@ var
   modelReaderFactory = require('./modelreader'),
   modelFactory = require('./model3d'),
   filePickerFactory = require('./file-picker'),
+  fileReader = require('./file-reader'),
 
   canvas = document.getElementById('canvas'),
   context = canvas.getContext('2d'),
@@ -985,32 +977,35 @@ var
   filePicker = filePickerFactory.create(pickerElementId, loadmodel, ['obj']);
 
 function loadmodel(file) {
-	var reader = modelReaderFactory.create(objPos);
-  reader.readFile(file, function(models){
-		if (models && models.length > 0) {
-			draw(models);
-		};
-	});
+  fileReader(file, function(modelData){
+    var reader = modelReaderFactory.create();
+    reader.readObjData(modelData, function(models){
+      if (models && models.length > 0) {
+        draw(models);
+      };
+    })
+  });
 }
 
 
-	function draw(models) {
-		var width = imageData.width,
-        height = imageData.height;
+function draw(models) {
+  requestAnimationFrame(function(){draw(models);});
 
-		requestAnimationFrame(function(){draw(models);});
-		
-    context.clearRect(0, 0, width, height);
-		imageData = context.getImageData(0, 0, width, height);
-    models.forEach((m, i) => {
-        m.draw(color, viewPos, imageData);
-        m.transform(transforms[i]);
-    });
-		
-		context.putImageData(imageData, 0, 0);
-	}
+	var width = imageData.width,
+      height = imageData.height;
+	
+  context.clearRect(0, 0, width, height);
+	imageData = context.getImageData(0, 0, width, height);
+  
+  models.forEach((m, i) => {
+      m.draw(color, objPos, viewPos, imageData);
+      m.transform(transforms[i]);
+  });
+	
+	context.putImageData(imageData, 0, 0);
+}
 
-},{"./file-picker":2,"./matrix":3,"./model3d":4,"./modeldescription":5,"./modelreader":6,"./request-animation-frame-polyfill":8,"./vector3d":9}],8:[function(require,module,exports){
+},{"./file-picker":2,"./file-reader":3,"./matrix":4,"./model3d":5,"./modeldescription":6,"./modelreader":7,"./request-animation-frame-polyfill":9,"./vector3d":10}],9:[function(require,module,exports){
 module.exports = function (ns) {
     var lastTime = 0,
     	vendors = ['ms', 'moz', 'webkit', 'o'],
@@ -1040,7 +1035,7 @@ module.exports = function (ns) {
     return ns;
 };
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 module.exports = (function(){
 	var vector3DPrototype = {
@@ -1119,4 +1114,4 @@ module.exports = (function(){
 	};
 })();
 
-},{}]},{},[7]);
+},{}]},{},[8]);

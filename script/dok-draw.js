@@ -423,7 +423,8 @@ return function drawLine(coordinates, imageData, color){
 	absX,
 	absY,
 	startX,
-	startY;
+	startY,
+	pos;
 
 			// Line is horizontal
 			if (deltaY === 0) {

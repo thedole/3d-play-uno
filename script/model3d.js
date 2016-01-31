@@ -3,7 +3,7 @@ module.exports = (function(){
 var
 	dokdraw = require('./dok-draw'),
 	model3DPrototype = {
-	draw: function(color, viewPos, imageData){
+	draw: function(color, pos, viewPos, imageData){
 		var vertices = this.vertices,
 		face,
 		faceStartIndex = 0,
@@ -17,14 +17,14 @@ var
 			faceEndIndex = faceStartIndex + vertexcount;
 			face = this.faces.subarray(faceStartIndex, faceEndIndex);
 			faceStartIndex = faceEndIndex;
-			this.drawFace(face, vertexcount, color, viewPos, imageData);
+			this.drawFace(face, vertexcount, color, pos, viewPos, imageData);
 		} while(faceStartIndex < faceslength);
 		vertices = null;
 		faceslength = null;
 	},
 
-	drawFace: function(face, count, color, viewPos, imageData){
-		var offset = this.position.components,
+	drawFace: function(face, count, color, pos, viewPos, imageData){
+		var offset = pos.components,
 		view = viewPos.components,
 		viewPosX = view[0],
 		viewPosY = view[1],
@@ -128,7 +128,6 @@ var
 },
 
 model3DCreate = function(
-	position,
 	vertices,
 	faces,
 	perfacevertexcount,
@@ -140,11 +139,6 @@ model3DCreate = function(
 				enumerable: true,
 				writable: true,
 				value: name
-			},
-			position: {
-				enumerable: true,
-				writable: true,
-				value: position
 			},
 			vertices: {
 				enumerable: true,

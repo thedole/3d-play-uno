@@ -7,6 +7,7 @@ var
   modelReaderFactory = require('./modelreader'),
   modelFactory = require('./model3d'),
   filePickerFactory = require('./file-picker'),
+  fileReader = require('./file-reader'),
 
   canvas = document.getElementById('canvas'),
   context = canvas.getContext('2d'),
@@ -63,27 +64,30 @@ var
   filePicker = filePickerFactory.create(pickerElementId, loadmodel, ['obj']);
 
 function loadmodel(file) {
-	var reader = modelReaderFactory.create(objPos);
-  reader.readFile(file, function(models){
-		if (models && models.length > 0) {
-			draw(models);
-		};
-	});
+  fileReader(file, function(modelData){
+    var reader = modelReaderFactory.create();
+    reader.readObjData(modelData, function(models){
+      if (models && models.length > 0) {
+        draw(models);
+      };
+    })
+  });
 }
 
 
-	function draw(models) {
-		var width = imageData.width,
-        height = imageData.height;
+function draw(models) {
+  requestAnimationFrame(function(){draw(models);});
 
-		requestAnimationFrame(function(){draw(models);});
-		
-    context.clearRect(0, 0, width, height);
-		imageData = context.getImageData(0, 0, width, height);
-    models.forEach((m, i) => {
-        m.draw(color, viewPos, imageData);
-        m.transform(transforms[i]);
-    });
-		
-		context.putImageData(imageData, 0, 0);
-	}
+	var width = imageData.width,
+      height = imageData.height;
+	
+  context.clearRect(0, 0, width, height);
+	imageData = context.getImageData(0, 0, width, height);
+  
+  models.forEach((m, i) => {
+      m.draw(color, objPos, viewPos, imageData);
+      m.transform(transforms[i]);
+  });
+	
+	context.putImageData(imageData, 0, 0);
+}

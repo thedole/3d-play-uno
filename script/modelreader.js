@@ -63,41 +63,17 @@ module.exports = (function(){
             var vertexdata = new Float64Array([].concat.apply([], descriptor.vertices));
             var faces = new Uint16Array([].concat.apply([], descriptor.faces));
             var vcount = new Uint8Array(descriptor.perfacevertexcount);
-            var model = modelFactory.create(objPos, vertexdata, faces, vcount, descriptor.name);
+            var model = modelFactory.create(vertexdata, faces, vcount, descriptor.name);
             models.push(model);
           });
 
         if(callback && typeof callback === 'function'){
           callback(models);
         }
-      },
-
-      readFile: function(file, callback){
-        if (file) {
-          var modelReader = this,
-              readObjData = modelReader.readObjData,
-              r = new FileReader();
-
-          r.addEventListener('load', function(e) {
-            var contents = e.target.result.match(/^.*$/gm);
-            readObjData.call(modelReader, contents, callback);
-          }, false);
-
-          r.readAsText(file);
-        } else {
-          var error = {message: 'File is missing'};
-          if(callback && typeof callback === 'function'){
-            callback(null, error);
-          }
-          else
-          {
-            throw error;
-          }
-        }
       }
 },
 
-createModelReader = function(position){
+createModelReader = function(){
   return Object.create(modelReaderPrototype, {
     models: {
       enumerable: true,
@@ -113,11 +89,6 @@ createModelReader = function(position){
       enumerable: true,
       writable: true,
       value: ''
-    },
-    objPos: {
-      enumerable: true,
-      writable: true,
-      value: position
     }
   });
 }
