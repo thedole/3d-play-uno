@@ -741,124 +741,131 @@ module.exports = (function(){
 
 },{}],5:[function(require,module,exports){
 module.exports = (function(){
-  var
-    modelFactory = require('./model3d'),
+  var modelFactory = require('./model3d'),
     descriptorFactory = require('./modeldescription'),
     modelReaderPrototype = {
-    lineHandlers: {
-  		'#': () => '',
-  		'mtllib': function(name){this.mtllib = name;},
-  		'o': function(name){this.modeldescriptors.push(descriptorFactory.create(name));},
-  		'v': function(x, y, z){
-  			if(!this.modeldescriptors.length){
-  				return;
-  			}
-  			this.modeldescriptors[this.modeldescriptors.length - 1].vertices.push([x, y, z]);
-  		},
-  		'usemtl': function(name){
-  			if(!this.modeldescriptors.length){
-  				return;
-  			}
-  			this.modeldescriptors[this.modeldescriptors.length - 1].material = name;
-  		},
-  		'f': function(){
-  			if(!this.modeldescriptors.length){
-  				return;
-  			}
-  			var vertices = [];
-  			Array.prototype.forEach.call(arguments, function(vertexindex){
-  				vertexindex = vertexindex < 0 ?
-  					this.modeldescriptors[this.modeldescriptors.length - 1].vertices.length + vertexindex
-  					: vertexindex - 1;
-  				vertices.push(vertexindex);
-  			});
-  			this.modeldescriptors[this.modeldescriptors.length - 1].faces.push(vertices);
-  			this.modeldescriptors[this.modeldescriptors.length - 1].perfacevertexcount.push(vertices.length);
-  		}
-  	},
+      lineHandlers: {
+        '#': () => '',
+        'mtllib': function(name){this.mtllib = name;},
+        'o': function(name){this.modeldescriptors.push(descriptorFactory.create(name));},
+        'v': function(x, y, z){
+          if(!this.modeldescriptors.length){
+            return;
+          }
+          this.modeldescriptors[this.modeldescriptors.length - 1].vertices.push([x, y, z]);
+        },
+        'usemtl': function(name){
+          if(!this.modeldescriptors.length){
+            return;
+          }
+          this.modeldescriptors[this.modeldescriptors.length - 1].material = name;
+        },
+        'f': function(){
+          if(!this.modeldescriptors.length){
+            return;
+          }
+          
+          var vertices = [];
+          Array.prototype.forEach.call(arguments, function(vertexindex){
+            vertexindex = vertexindex < 0 
+              ? this.modeldescriptors[this.modeldescriptors.length - 1].vertices.length + vertexindex
+              : vertexindex - 1;
+            vertices.push(vertexindex);
+          });
+          this.modeldescriptors[this.modeldescriptors.length - 1].faces.push(vertices);
+          this.modeldescriptors[this.modeldescriptors.length - 1].perfacevertexcount.push(vertices.length);
+        }
+      },
 
-    getModels: function(){
-  		return this.models;
-  	},
+      getModels: function(){
+        return this.models;
+      },
 
-    readFile: function(file, callback){
-      if (file) {
-    		var modelReader = this,
+      readObjData: function(contents, callback){
+        var modelReader = this,
             lineHandlers = modelReader.lineHandlers,
             modeldescriptors = modelReader.modeldescriptors,
             models = modelReader.models,
-            objPos = modelReader.objPos,
-            r = new FileReader();
+            objPos = modelReader.objPos;
 
-    		r.addEventListener('load', function(e) {
-    			var contents = e.target.result.match(/^.*$/gm);
-    			contents.forEach(
-    				(line) => {
-    					var parts = line.split(/\s+/),
-    					keyword = parts.shift();
-    					if(!lineHandlers.hasOwnProperty(keyword)){
-    						return;
-    					}
+        contents.forEach(
+          (line) => {
+            var parts = line.split(/\s+/),
+            keyword = parts.shift();
+            if(!lineHandlers.hasOwnProperty(keyword)){
+              return;
+            }
 
-              lineHandlers[keyword].apply(modelReader, parts);
-    				});
+            lineHandlers[keyword].apply(modelReader, parts);
+          });
 
-          modeldescriptors.forEach(
-    				function(descriptor){
-    					var vertexdata = new Float64Array([].concat.apply([], descriptor.vertices));
-    					var faces = new Uint16Array([].concat.apply([], descriptor.faces));
-    					var vcount = new Uint8Array(descriptor.perfacevertexcount);
-              var model = modelFactory.create(objPos, vertexdata, faces, vcount, descriptor.name);
-              models.push(model);
-  				});
+        modeldescriptors.forEach(
+          function(descriptor){
+            var vertexdata = new Float64Array([].concat.apply([], descriptor.vertices));
+            var faces = new Uint16Array([].concat.apply([], descriptor.faces));
+            var vcount = new Uint8Array(descriptor.perfacevertexcount);
+            var model = modelFactory.create(objPos, vertexdata, faces, vcount, descriptor.name);
+            models.push(model);
+          });
 
-          if(callback && typeof callback === 'function'){
-    			  callback(models);
-          }
-    		}, false);
-
-    		r.readAsText(file);
-    	} else {
-        var error = {message: 'File is missing'};
         if(callback && typeof callback === 'function'){
-          callback(null, error);
+          callback(models);
         }
-        else
-        {
+      },
+
+      readFile: function(file, callback){
+        if (file) {
+          var modelReader = this,
+              readObjData = modelReader.readObjData,
+              r = new FileReader();
+
+          r.addEventListener('load', function(e) {
+            var contents = e.target.result.match(/^.*$/gm);
+            readObjData.call(modelReader, contents, callback);
+          }, false);
+
+          r.readAsText(file);
+        } else {
+          var error = {message: 'File is missing'};
+          if(callback && typeof callback === 'function'){
+            callback(null, error);
+          }
+          else
+          {
             throw error;
+          }
         }
-    	}
-    }
-  },
-
-  createModelReader = function(position){
-    return Object.create(modelReaderPrototype, {
-      models: {
-        enumerable: true,
-				writable: true,
-				value: []
-        },
-      modeldescriptors: {
-        enumerable: true,
-				writable: true,
-				value: []
-      },
-      mtllib: {
-        enumerable: true,
-				writable: true,
-				value: ''
-      },
-      objPos: {
-        enumerable: true,
-        writable: true,
-        value: position
       }
-    });
-  }
+},
 
-  return {
-    create: createModelReader
-  }
+createModelReader = function(position){
+  return Object.create(modelReaderPrototype, {
+    models: {
+      enumerable: true,
+      writable: true,
+      value: []
+    },
+    modeldescriptors: {
+      enumerable: true,
+      writable: true,
+      value: []
+    },
+    mtllib: {
+      enumerable: true,
+      writable: true,
+      value: ''
+    },
+    objPos: {
+      enumerable: true,
+      writable: true,
+      value: position
+    }
+  });
+}
+
+return {
+  create: createModelReader
+}
 })();
 
 },{"./model3d":3,"./modeldescription":4}],6:[function(require,module,exports){
