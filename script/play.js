@@ -13,19 +13,20 @@ var
   imageData = baseImageData,
   blackScreen = [],
 
-  //tmpsina, tmpsinc, tmpsine,
-
   angleX = Math.PI/128,
   angleY = Math.PI/512,
   angleZ = Math.PI/256,
 
-  x = matrixFactory.create([[1,0,0],
+  x = matrixFactory.create3x3(
+    [[1,0,0],
   	[0, Math.cos(angleX),-Math.sin(angleX)],
   	[0, Math.sin(angleX),Math.cos(angleX),0]]),
-  y = matrixFactory.create([[Math.cos(angleY),0,Math.sin(angleY)],
+  y = matrixFactory.create3x3(
+    [[Math.cos(angleY),0,Math.sin(angleY)],
   	[0,1,0],
   	[-Math.sin(angleY),0,Math.cos(angleY)]]),
-  z = matrixFactory.create([[Math.cos(angleZ),-Math.sin(angleZ),0],
+  z = matrixFactory.create3x3(
+    [[Math.cos(angleZ),-Math.sin(angleZ),0],
   	[Math.sin(angleZ),Math.cos(angleZ),0],
   	[0,0,1]]),
 
@@ -73,8 +74,8 @@ var
   		case 'obj':
   		reader = modelReaderFactory.create(objPos);
       reader.readFile(file, function(models){
-  			if (models && models.length === 1) {
-  				draw(models[0]);
+  			if (models && models.length > 0) {
+  				draw(models);
   			};
   		});
   		break;
@@ -82,15 +83,16 @@ var
 }
 
 
-	function draw(model) {
+	function draw(models) {
 		var width = imageData.width,
 			height = imageData.height;
-		requestAnimationFrame(function(){draw(model);});
+		requestAnimationFrame(function(){draw(models);});
 		context.clearRect(0, 0, width, height);
 		imageData = context.getImageData(0, 0, width, height);
-		model.draw(color, viewPos, imageData);
-		model.transform(rotationMatrix);
+    models.forEach((m) => {
+        m.draw(color, viewPos, imageData);
+        m.transform(rotationMatrix);
+    });
+		
 		context.putImageData(imageData, 0, 0);
 	}
-
-//draw();

@@ -413,7 +413,7 @@ function drawSteep(pos, screenBuffer, color, deltaX, deltaY, absX, absY, width, 
 	} while(--iterations > 0);
 }
 
-return function(coordinates, imageData, color){
+return function drawLine(coordinates, imageData, color){
 	var screenBuffer = imageData.data,
 	deltaY = coordinates[y2] - coordinates[y1],
 	deltaX = coordinates[x2] - coordinates[x1],

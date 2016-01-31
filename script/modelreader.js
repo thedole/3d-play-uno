@@ -4,7 +4,7 @@ module.exports = (function(){
     descriptorFactory = require('./modeldescription'),
     modelReaderPrototype = {
     lineHandlers: {
-  		'#': function(){return;},
+  		'#': () => '',
   		'mtllib': function(name){this.mtllib = name;},
   		'o': function(name){this.modeldescriptors.push(descriptorFactory.create(name));},
   		'v': function(x, y, z){
@@ -47,10 +47,11 @@ module.exports = (function(){
             models = modelReader.models,
             objPos = modelReader.objPos,
             r = new FileReader();
-    		r.onload = function(e) {
+
+    		r.addEventListener('load', function(e) {
     			var contents = e.target.result.match(/^.*$/gm);
     			contents.forEach(
-    				function(line){
+    				(line) => {
     					var parts = line.split(/\s+/),
     					keyword = parts.shift();
     					if(!lineHandlers.hasOwnProperty(keyword)){
@@ -72,7 +73,7 @@ module.exports = (function(){
           if(callback && typeof callback === 'function'){
     			  callback(models);
           }
-    		};
+    		}, false);
 
     		r.readAsText(file);
     	} else {

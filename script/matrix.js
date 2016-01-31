@@ -22,10 +22,10 @@ module.exports = (function(){
   		result[2][1] += this.data[2][0]*m2.data[0][1] + this.data[2][1]*m2.data[1][1] + this.data[2][2]*m2.data[2][1];
   		result[2][2] += this.data[2][0]*m2.data[0][2] + this.data[2][1]*m2.data[1][2] + this.data[2][2]*m2.data[2][2];
 
-  		return createMatrix(result);
+  		return create3x3Matrix(result);
   	}
   },
-  createMatrix = function(data){
+  create3x3Matrix = function(data){
     return Object.create(matrixPrototype, {
         data: {
           enumerable: true,
@@ -36,7 +36,7 @@ module.exports = (function(){
   };
 
   return {
-    create: createMatrix,
+    create3x3: create3x3Matrix,
     prototype: matrixPrototype
   };
 })();

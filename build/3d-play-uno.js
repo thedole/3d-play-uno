@@ -414,7 +414,7 @@ function drawSteep(pos, screenBuffer, color, deltaX, deltaY, absX, absY, width, 
 	} while(--iterations > 0);
 }
 
-return function(coordinates, imageData, color){
+return function drawLine(coordinates, imageData, color){
 	var screenBuffer = imageData.data,
 	deltaY = coordinates[y2] - coordinates[y1],
 	deltaX = coordinates[x2] - coordinates[x1],
@@ -525,10 +525,10 @@ module.exports = (function(){
   		result[2][1] += this.data[2][0]*m2.data[0][1] + this.data[2][1]*m2.data[1][1] + this.data[2][2]*m2.data[2][1];
   		result[2][2] += this.data[2][0]*m2.data[0][2] + this.data[2][1]*m2.data[1][2] + this.data[2][2]*m2.data[2][2];
 
-  		return createMatrix(result);
+  		return create3x3Matrix(result);
   	}
   },
-  createMatrix = function(data){
+  create3x3Matrix = function(data){
     return Object.create(matrixPrototype, {
         data: {
           enumerable: true,
@@ -539,7 +539,7 @@ module.exports = (function(){
   };
 
   return {
-    create: createMatrix,
+    create3x3: create3x3Matrix,
     prototype: matrixPrototype
   };
 })();
@@ -746,7 +746,7 @@ module.exports = (function(){
     descriptorFactory = require('./modeldescription'),
     modelReaderPrototype = {
     lineHandlers: {
-  		'#': function(){return;},
+  		'#': () => '',
   		'mtllib': function(name){this.mtllib = name;},
   		'o': function(name){this.modeldescriptors.push(descriptorFactory.create(name));},
   		'v': function(x, y, z){
@@ -789,10 +789,11 @@ module.exports = (function(){
             models = modelReader.models,
             objPos = modelReader.objPos,
             r = new FileReader();
-    		r.onload = function(e) {
+
+    		r.addEventListener('load', function(e) {
     			var contents = e.target.result.match(/^.*$/gm);
     			contents.forEach(
-    				function(line){
+    				(line) => {
     					var parts = line.split(/\s+/),
     					keyword = parts.shift();
     					if(!lineHandlers.hasOwnProperty(keyword)){
@@ -814,7 +815,7 @@ module.exports = (function(){
           if(callback && typeof callback === 'function'){
     			  callback(models);
           }
-    		};
+    		}, false);
 
     		r.readAsText(file);
     	} else {
@@ -876,19 +877,20 @@ var
   imageData = baseImageData,
   blackScreen = [],
 
-  //tmpsina, tmpsinc, tmpsine,
-
   angleX = Math.PI/128,
   angleY = Math.PI/512,
   angleZ = Math.PI/256,
 
-  x = matrixFactory.create([[1,0,0],
+  x = matrixFactory.create3x3(
+    [[1,0,0],
   	[0, Math.cos(angleX),-Math.sin(angleX)],
   	[0, Math.sin(angleX),Math.cos(angleX),0]]),
-  y = matrixFactory.create([[Math.cos(angleY),0,Math.sin(angleY)],
+  y = matrixFactory.create3x3(
+    [[Math.cos(angleY),0,Math.sin(angleY)],
   	[0,1,0],
   	[-Math.sin(angleY),0,Math.cos(angleY)]]),
-  z = matrixFactory.create([[Math.cos(angleZ),-Math.sin(angleZ),0],
+  z = matrixFactory.create3x3(
+    [[Math.cos(angleZ),-Math.sin(angleZ),0],
   	[Math.sin(angleZ),Math.cos(angleZ),0],
   	[0,0,1]]),
 
@@ -936,8 +938,8 @@ var
   		case 'obj':
   		reader = modelReaderFactory.create(objPos);
       reader.readFile(file, function(models){
-  			if (models && models.length === 1) {
-  				draw(models[0]);
+  			if (models && models.length > 0) {
+  				draw(models);
   			};
   		});
   		break;
@@ -945,18 +947,19 @@ var
 }
 
 
-	function draw(model) {
+	function draw(models) {
 		var width = imageData.width,
 			height = imageData.height;
-		requestAnimationFrame(function(){draw(model);});
+		requestAnimationFrame(function(){draw(models);});
 		context.clearRect(0, 0, width, height);
 		imageData = context.getImageData(0, 0, width, height);
-		model.draw(color, viewPos, imageData);
-		model.transform(rotationMatrix);
+    models.forEach((m) => {
+        m.draw(color, viewPos, imageData);
+        m.transform(rotationMatrix);
+    });
+		
 		context.putImageData(imageData, 0, 0);
 	}
-
-//draw();
 
 },{"./matrix":2,"./model3d":3,"./modeldescription":4,"./modelreader":5,"./request-animation-frame-polyfill":7,"./vector3d":8}],7:[function(require,module,exports){
 module.exports = function (ns) {
