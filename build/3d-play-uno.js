@@ -974,19 +974,18 @@ var
 
   model,
 	pickerElementId = "fileselector",
-  filePicker = filePickerFactory.create(pickerElementId, loadmodel, ['obj']);
+  filePicker = filePickerFactory.create(pickerElementId, (file) => {
+    fileReader(file, loadModels);
+}, ['obj']);
 
-function loadmodel(file) {
-  fileReader(file, function(modelData){
-    var reader = modelReaderFactory.create();
-    reader.readObjData(modelData, function(models){
-      if (models && models.length > 0) {
-        draw(models);
-      };
-    })
-  });
+function loadModels(modelData){
+  var reader = modelReaderFactory.create();
+  reader.readObjData(modelData, function(models){
+    if (models && models.length > 0) {
+      draw(models);
+    };
+  })
 }
-
 
 function draw(models) {
   requestAnimationFrame(function(){draw(models);});
