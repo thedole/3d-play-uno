@@ -1,3 +1,4 @@
+"use strict";
 module.exports = (function(){
 	var vector3DPrototype = {
 		transform: function(matrix){

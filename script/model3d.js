@@ -1,3 +1,4 @@
+"use strict";
 module.exports = (function(){
 var
 	dokdraw = require('./dok-draw'),
@@ -90,6 +91,7 @@ var
 	transform: function(matrix){
 		var index = 0,
 		endindex,
+		vertex,
 		vertices = this.vertices,
 		verticeslength = this.vertices.length,
 		transformVertex = this.transformVertex;
@@ -103,8 +105,8 @@ var
 	},
 
 	transformVertex: function(vertex, matrix){
-		var result = new Float64Array([0,0,0]);
-		data = matrix.data;
+		var result = new Float64Array([0,0,0]),
+			data = matrix.data;
 
 		result[0] += data[0][0] * vertex[0];
 		result[0] += data[0][1] * vertex[1];

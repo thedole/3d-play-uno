@@ -1,4 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+"use strict";
 /**********************************************
 	Line Drawing function that uses Bresenham
 	Line Drawing algorithm.
@@ -85,7 +86,7 @@ module.exports =
 function drawVertical(pos, screenBuffer, color, deltaY, width){
 	var iterations = (deltaY / 8) | 0,
 	rest = deltaY % 8,
-	increment = width * 4 - 3;
+	increment = width * 4 - 3,
 	i = 0;
 
 	if (rest > 0) {
@@ -501,6 +502,52 @@ return function drawLine(coordinates, imageData, color){
 	})();
 
 },{}],2:[function(require,module,exports){
+"use strict";
+module.exports = (function(){
+  function createFilePickerHandler(elementId, callback, extensions){
+    var inputElement = document.getElementById("fileselector");
+
+    inputElement.addEventListener("change", (e) => {
+      loadmodel(e, callback)
+    }, false);
+
+    function loadmodel(event, callback) {
+      var  fileList = event.target.files,
+           file,
+           extension,
+           model,
+           reader;
+
+      /* now you can work with the file list */
+      if (!fileList || Object.prototype.toString.call(fileList) !== '[object FileList]'){
+        return;
+      }
+
+      // May need to change this later for loading materials as well?
+      if(fileList.length !== 1){
+        return;
+      }
+
+      file = fileList[0];
+
+      if (extensions) {
+        extension = file.name.split('.').pop();
+        let pattern = new RegExp(extension);
+        if(!extensions.some(RegExp.prototype.test, pattern)){
+          throw ('This file has an invalid file extension ".' + extension + '"');
+        }
+      };
+
+      callback(file);
+    }
+  }
+
+  return {
+    create: createFilePickerHandler
+  };
+})();
+},{}],3:[function(require,module,exports){
+"use strict";
 module.exports = (function(){
   var matrixPrototype = {
   	rows: function(){
@@ -544,7 +591,8 @@ module.exports = (function(){
   };
 })();
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
+"use strict";
 module.exports = (function(){
 var
 	dokdraw = require('./dok-draw'),
@@ -637,6 +685,7 @@ var
 	transform: function(matrix){
 		var index = 0,
 		endindex,
+		vertex,
 		vertices = this.vertices,
 		verticeslength = this.vertices.length,
 		transformVertex = this.transformVertex;
@@ -650,8 +699,8 @@ var
 	},
 
 	transformVertex: function(vertex, matrix){
-		var result = new Float64Array([0,0,0]);
-		data = matrix.data;
+		var result = new Float64Array([0,0,0]),
+			data = matrix.data;
 
 		result[0] += data[0][0] * vertex[0];
 		result[0] += data[0][1] * vertex[1];
@@ -722,7 +771,8 @@ return {
 };
 })();
 
-},{"./dok-draw":1}],4:[function(require,module,exports){
+},{"./dok-draw":1}],5:[function(require,module,exports){
+"use strict";
 module.exports = (function(){
   return {
     create: function(name){
@@ -739,7 +789,8 @@ module.exports = (function(){
   }
 })();
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
+"use strict";
 module.exports = (function(){
   var modelFactory = require('./model3d'),
     descriptorFactory = require('./modeldescription'),
@@ -868,7 +919,8 @@ return {
 }
 })();
 
-},{"./model3d":3,"./modeldescription":4}],6:[function(require,module,exports){
+},{"./model3d":4,"./modeldescription":5}],7:[function(require,module,exports){
+"use strict";
 var
   w = require('./request-animation-frame-polyfill')(window),
   matrixFactory = require('./matrix'),
@@ -876,6 +928,7 @@ var
   descriptorFactory = require('./modeldescription'),
   modelReaderFactory = require('./modelreader'),
   modelFactory = require('./model3d'),
+  filePickerFactory = require('./file-picker'),
 
   canvas = document.getElementById('canvas'),
   context = canvas.getContext('2d'),
@@ -928,51 +981,26 @@ var
 	viewPos = vectorFactory.create(new Float64Array([imageData.width/2, imageData.height/2, -1024])),
 
   model,
-	inputElement = document.getElementById("fileselector");
+	pickerElementId = "fileselector",
+  filePicker = filePickerFactory.create(pickerElementId, loadmodel, ['obj']);
 
-  inputElement.addEventListener("change", loadmodel, false);
-
-  function loadmodel(event) {
-		var fileList = event.target.files,
-		file,
-		extension,
-		model,
-		reader;
-
-		/* now you can work with the file list */
-		if (!fileList || Object.prototype.toString.call(fileList) !== '[object FileList]'){
-			return;
-		}
-
-  	// May need to change this later for loading materials as well
-  	if(fileList.length !== 1){
-  		return;
-  	}
-
-  	file = fileList[0];
-  	extension = file.name.split('.').pop();
-  	if(!extension){
-  		return;
-  	}
-
-  	switch(extension){
-  		case 'obj':
-  		reader = modelReaderFactory.create(objPos);
-      reader.readFile(file, function(models){
-  			if (models && models.length > 0) {
-  				draw(models);
-  			};
-  		});
-  		break;
-  	}
+function loadmodel(file) {
+	var reader = modelReaderFactory.create(objPos);
+  reader.readFile(file, function(models){
+		if (models && models.length > 0) {
+			draw(models);
+		};
+	});
 }
 
 
 	function draw(models) {
 		var width = imageData.width,
-			height = imageData.height;
+        height = imageData.height;
+
 		requestAnimationFrame(function(){draw(models);});
-		context.clearRect(0, 0, width, height);
+		
+    context.clearRect(0, 0, width, height);
 		imageData = context.getImageData(0, 0, width, height);
     models.forEach((m, i) => {
         m.draw(color, viewPos, imageData);
@@ -982,7 +1010,7 @@ var
 		context.putImageData(imageData, 0, 0);
 	}
 
-},{"./matrix":2,"./model3d":3,"./modeldescription":4,"./modelreader":5,"./request-animation-frame-polyfill":7,"./vector3d":8}],7:[function(require,module,exports){
+},{"./file-picker":2,"./matrix":3,"./model3d":4,"./modeldescription":5,"./modelreader":6,"./request-animation-frame-polyfill":8,"./vector3d":9}],8:[function(require,module,exports){
 module.exports = function (ns) {
     var lastTime = 0,
     	vendors = ['ms', 'moz', 'webkit', 'o'],
@@ -1012,7 +1040,8 @@ module.exports = function (ns) {
     return ns;
 };
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
+"use strict";
 module.exports = (function(){
 	var vector3DPrototype = {
 		transform: function(matrix){
@@ -1090,4 +1119,4 @@ module.exports = (function(){
 	};
 })();
 
-},{}]},{},[6]);
+},{}]},{},[7]);

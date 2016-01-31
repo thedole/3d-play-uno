@@ -1,3 +1,4 @@
+"use strict";
 /**********************************************
 	Line Drawing function that uses Bresenham
 	Line Drawing algorithm.
@@ -84,7 +85,7 @@ module.exports =
 function drawVertical(pos, screenBuffer, color, deltaY, width){
 	var iterations = (deltaY / 8) | 0,
 	rest = deltaY % 8,
-	increment = width * 4 - 3;
+	increment = width * 4 - 3,
 	i = 0;
 
 	if (rest > 0) {

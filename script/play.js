@@ -1,3 +1,4 @@
+"use strict";
 var
   w = require('./request-animation-frame-polyfill')(window),
   matrixFactory = require('./matrix'),
@@ -5,6 +6,7 @@ var
   descriptorFactory = require('./modeldescription'),
   modelReaderFactory = require('./modelreader'),
   modelFactory = require('./model3d'),
+  filePickerFactory = require('./file-picker'),
 
   canvas = document.getElementById('canvas'),
   context = canvas.getContext('2d'),
@@ -57,51 +59,26 @@ var
 	viewPos = vectorFactory.create(new Float64Array([imageData.width/2, imageData.height/2, -1024])),
 
   model,
-	inputElement = document.getElementById("fileselector");
+	pickerElementId = "fileselector",
+  filePicker = filePickerFactory.create(pickerElementId, loadmodel, ['obj']);
 
-  inputElement.addEventListener("change", loadmodel, false);
-
-  function loadmodel(event) {
-		var fileList = event.target.files,
-		file,
-		extension,
-		model,
-		reader;
-
-		/* now you can work with the file list */
-		if (!fileList || Object.prototype.toString.call(fileList) !== '[object FileList]'){
-			return;
-		}
-
-  	// May need to change this later for loading materials as well
-  	if(fileList.length !== 1){
-  		return;
-  	}
-
-  	file = fileList[0];
-  	extension = file.name.split('.').pop();
-  	if(!extension){
-  		return;
-  	}
-
-  	switch(extension){
-  		case 'obj':
-  		reader = modelReaderFactory.create(objPos);
-      reader.readFile(file, function(models){
-  			if (models && models.length > 0) {
-  				draw(models);
-  			};
-  		});
-  		break;
-  	}
+function loadmodel(file) {
+	var reader = modelReaderFactory.create(objPos);
+  reader.readFile(file, function(models){
+		if (models && models.length > 0) {
+			draw(models);
+		};
+	});
 }
 
 
 	function draw(models) {
 		var width = imageData.width,
-			height = imageData.height;
+        height = imageData.height;
+
 		requestAnimationFrame(function(){draw(models);});
-		context.clearRect(0, 0, width, height);
+		
+    context.clearRect(0, 0, width, height);
 		imageData = context.getImageData(0, 0, width, height);
     models.forEach((m, i) => {
         m.draw(color, viewPos, imageData);
