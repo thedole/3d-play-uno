@@ -898,10 +898,7 @@ var
 	// sina = 1, cosa=0, sinb = Math.sin(Math.PI/67), cosb=Math.cos(Math.PI/67);
 	// sinc = 1, cosc=0, sind = Math.sin(Math.PI/41), cosd=Math.cos(Math.PI/41);
 	// sine = 1, cose=0, sinf = Math.sin(Math.PI/7), cosf=Math.cos(Math.PI/7),
-	modelDescription = {
-		name: 'testCube',
-		vertices: []
-	},
+	
 	color = [0,0,0, 255],
 	objPos = vectorFactory.create(new Float64Array([400,400,600])),
 	viewPos = vectorFactory.create(new Float64Array([imageData.width/2, imageData.height/2, -1024])),
