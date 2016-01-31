@@ -895,6 +895,23 @@ var
   	[0,0,1]]),
 
   rotationMatrix = x.multiply(y).multiply(z),
+
+  x2 = matrixFactory.create3x3(
+    [[1,0,0],
+    [0, Math.cos(-angleX),-Math.sin(-angleX)],
+    [0, Math.sin(-angleX),Math.cos(-angleX),0]]),
+  y2 = matrixFactory.create3x3(
+    [[Math.cos(-angleY),0,Math.sin(-angleY)],
+    [0,1,0],
+    [-Math.sin(-angleY),0,Math.cos(-angleY)]]),
+  z2 = matrixFactory.create3x3(
+    [[Math.cos(-angleZ),-Math.sin(-angleZ),0],
+    [Math.sin(-angleZ),Math.cos(-angleZ),0],
+    [0,0,1]]),
+
+  rotationMatrix2 = x2.multiply(y2).multiply(z2),
+
+  transforms = [rotationMatrix, rotationMatrix2],
 	// sina = 1, cosa=0, sinb = Math.sin(Math.PI/67), cosb=Math.cos(Math.PI/67);
 	// sinc = 1, cosc=0, sind = Math.sin(Math.PI/41), cosd=Math.cos(Math.PI/41);
 	// sine = 1, cose=0, sinf = Math.sin(Math.PI/7), cosf=Math.cos(Math.PI/7),
@@ -950,9 +967,9 @@ var
 		requestAnimationFrame(function(){draw(models);});
 		context.clearRect(0, 0, width, height);
 		imageData = context.getImageData(0, 0, width, height);
-    models.forEach((m) => {
+    models.forEach((m, i) => {
         m.draw(color, viewPos, imageData);
-        m.transform(rotationMatrix);
+        m.transform(transforms[i]);
     });
 		
 		context.putImageData(imageData, 0, 0);
