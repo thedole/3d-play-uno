@@ -2,10 +2,10 @@
 var
   w = require('./request-animation-frame-polyfill')(window),
   matrixFactory = require('./matrix'),
-  vectorFactory = require('./vector3d'),
-  descriptorFactory = require('./modeldescription'),
-  modelReaderFactory = require('./modelreader'),
-  modelFactory = require('./model3d'),
+  vectorFactory = require('./vector-3d'),
+  descriptorFactory = require('./model-description'),
+  modelReaderFactory = require('./model-reader'),
+  modelFactory = require('./model-3d'),
   filePickerFactory = require('./file-picker'),
   fileReader = require('./file-reader'),
 

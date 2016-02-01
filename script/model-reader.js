@@ -1,7 +1,7 @@
 "use strict";
 module.exports = (function(){
-  var modelFactory = require('./model3d'),
-    descriptorFactory = require('./modeldescription'),
+  var modelFactory = require('./model-3d'),
+    descriptorFactory = require('./model-description'),
     modelReaderPrototype = {
       lineHandlers: {
         '#': () => '',

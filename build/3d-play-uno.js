@@ -812,8 +812,8 @@ module.exports = (function(){
 },{}],7:[function(require,module,exports){
 "use strict";
 module.exports = (function(){
-  var modelFactory = require('./model3d'),
-    descriptorFactory = require('./modeldescription'),
+  var modelFactory = require('./model-3d'),
+    descriptorFactory = require('./model-description'),
     modelReaderPrototype = {
       lineHandlers: {
         '#': () => '',
@@ -910,15 +910,15 @@ return {
 }
 })();
 
-},{"./model3d":5,"./modeldescription":6}],8:[function(require,module,exports){
+},{"./model-3d":5,"./model-description":6}],8:[function(require,module,exports){
 "use strict";
 var
   w = require('./request-animation-frame-polyfill')(window),
   matrixFactory = require('./matrix'),
-  vectorFactory = require('./vector3d'),
-  descriptorFactory = require('./modeldescription'),
-  modelReaderFactory = require('./modelreader'),
-  modelFactory = require('./model3d'),
+  vectorFactory = require('./vector-3d'),
+  descriptorFactory = require('./model-description'),
+  modelReaderFactory = require('./model-reader'),
+  modelFactory = require('./model-3d'),
   filePickerFactory = require('./file-picker'),
   fileReader = require('./file-reader'),
 
@@ -1004,7 +1004,7 @@ function draw(models) {
 	context.putImageData(imageData, 0, 0);
 }
 
-},{"./file-picker":2,"./file-reader":3,"./matrix":4,"./model3d":5,"./modeldescription":6,"./modelreader":7,"./request-animation-frame-polyfill":9,"./vector3d":10}],9:[function(require,module,exports){
+},{"./file-picker":2,"./file-reader":3,"./matrix":4,"./model-3d":5,"./model-description":6,"./model-reader":7,"./request-animation-frame-polyfill":9,"./vector-3d":10}],9:[function(require,module,exports){
 module.exports = function (ns) {
     var lastTime = 0,
     	vendors = ['ms', 'moz', 'webkit', 'o'],
