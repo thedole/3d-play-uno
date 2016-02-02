@@ -5,104 +5,119 @@
 
       <style>
         /* colors
-          #FFCB5B Light orange
-          #E86E58 Darker Orange
-          #FF8DE7 Pink
-          #8E75E8 Purple
-          #4C1296 Darker purple
-          #C6EBFF Light Blue
-        */
-        body {
-          background: #8E75E8; /* Purple */
-          text-align: center;
-          color: #4C1296; /* Darker Purple */
-          font-family: sans-serif;
-          font-size: 18px;
-        }
+            #FFCB5B Light orange
+            #E86E58 Darker Orange
+            #FF8DE7 Pink
+            #8E75E8 Purple
+            #4C1296 Darker purple
+            #C6EBFF Light Blue
+          */
+          body {
+            background: #8E75E8; /* Purple */
+            text-align: center;
+            color: #4C1296; /* Darker Purple */
+            font-family: sans-serif;
+            font-size: 18px;
+          }
 
-        h1{
-          text-align: center;
-          font-family: verdana sans-serif;
-          color: #E86E58; /* Darker Orange */
-        }
+          h1{
+            text-align: center;
+            font-family: verdana sans-serif;
+            color: #E86E58; /* Darker Orange */
+          }
 
-        a,
-        a:visited{
-          color: #FFCB5B; /* Light orange */
-        }
+          a,
+          a:visited{
+            color: #FFCB5B; /* Light orange */
+          }
 
-        div.wrapper{
-          float: left;
-          width: 100%;
-          margin: 0;
-          padding: 0;
-          overflow: hidden;
-        }
+          div.wrapper{
+            float: left;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+          }
 
-        section.ingress>div.wrapper{
-          padding: 3em;
-          background: #FFCB5B; /* Light orange */
-          text-align: left;
-        }
+          section.ingress>div.wrapper{
+            padding: 3em;
+            background: #FFCB5B; /* Light orange */
+            text-align: left;
+          }
 
-        section.ingress{
-          width: 60%;
-          margin: 0 auto;
-        }
+          section.ingress{
+            width: 1024px;
+            margin: 0 auto;
+          }
 
-        nav, 
-        nav>ul,
-        nav>ul>li, 
-        nav>ul>li>a,
-        canvas.ingress-content{
+          nav, 
+          nav>ul,
+          nav>ul>li, 
+          nav>ul>li>a,
+          div.ingress-content{
+            position: relative;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+
+          }        
+
+          nav{
+            float: left;
+            width: 200px;
+            padding: 1em;
+            color: #E86E58; /* Darker orange */
+            background: #E86E58; /* Darker orange */
+            border-radius: 1em 0;
+          }
+
+          nav,
+          .ingress-content{
+            padding-bottom: 2000px;
+            margin-bottom: -2000px;
+          }    
+
+          clearfix::after{
+            float: left;
+            content: '';
+          }
+
+          div.ingress-content{
+            float: left;
+            text-align: center;
+            width: 820px;
+            border-radius: 0 0 1em 0;
+            background: #E86E58;
+          }
+
+          nav>ul,
+          nav>ul>li, 
+          nav>ul>li>a{
+            width: 100%;
+          }
+
+          nav>ul>li{
+            list-style: none inside;
+          }
+
+          nav>ul>li>a{
+            display: block;
+          }
+
+         input{
+          margin: 20px auto;
           position: relative;
-          box-sizing: border-box;
-          margin: 0;
-          padding: 0;
+          background: #FFCB5B;
+          border: inset #E86E58;
+         }
 
-        }        
-
-        nav{
-          float: left;
-          width: 33%;
-          padding: 3%;
-          color: #E86E58; /* Darker orange */
-          background: #E86E58; /* Darker orange */
-          border-radius: 1em 0;
-        }
-
-        nav,
-        ingress-content{
-          padding-bottom: 2000px;
-          margin-bottom: -2000px;
-        }    
-
-        clearfix::after{
-          float: left;
-          content: '';
-        }
-
-        canvas.ingress-content{
-          float: left;
-          width: 66%;
-          padding: 3% 3em;
-          background: #8E75E8; /* Purple */
-          border-radius: 0 0 1em 0;
-        }
-
-        nav>ul,
-        nav>ul>li, 
-        nav>ul>li>a{
-          width: 100%;
-        }
-
-        nav>ul>li{
-          list-style: none inside;
-        }
-
-        nav>ul>li>a{
-          display: block;
-        }
+         #canvas {
+            float: left;
+            position: relative;
+            margin: 20px 0;
+            border: 2px solid #E86E58;
+            background: radial-gradient(circle, #8E75E8, #4C1296);
+         }
       </style>
    </head>
 
@@ -118,10 +133,13 @@
                     <li><a href="model-viewer.html">Model viewer</a></li>
                   </ul>
                 </nav>
-                <canvas class="ingress-content clearfix">
+                <div class="ingress-content clearfix">
+                <canvas id="canvas" width="800" height="600">
                 </canvas>
+                </div>
             </div>
         </div>
       </section>
+      <script src='./test-scene-1.bundle.js'></script>
   </body>
 </html>
