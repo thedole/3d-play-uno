@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
    <head>
-     <title>DOK3D My experiments in 3 dimensions</title>
+     <title>Test Scene 1</title>
 
       <style>
         /* colors
@@ -54,7 +54,7 @@
         nav>ul,
         nav>ul>li, 
         nav>ul>li>a,
-        div.ingress-content{
+        canvas.ingress-content{
           position: relative;
           box-sizing: border-box;
           margin: 0;
@@ -82,7 +82,7 @@
           content: '';
         }
 
-        div.ingress-content{
+        canvas.ingress-content{
           float: left;
           width: 66%;
           padding: 3% 3em;
@@ -109,26 +109,19 @@
   <body>
       <section class="ingress clearfix">
       <div class="wrapper clearfix">
-        <h1>DOK3D My experiments in 3 dimensions</h1>
+      <h1>Test Scene 1</h1>
         
         <div class="wrapper clearfix">
-          <nav class="clearfix">
-            <ul>
-              <li><a href="model-viewer.html">Model viewer</a></li>
-              <li><a href="test-scene-1.html">Test Scene 1</a></li>
-            </ul>
-          </nav>
-          <div class="ingress-content clearfix">
-            This project is about me experimenting with making a 3d-engine of sorts. 
-            I will not necessarily use commonly accepted techniques that people who 
-            actually know what they are doing use, partly because I don't have a clue 
-            about what I'm doing, and partly because half the point is to see what I 
-            can make more or less intuitively. I will probably try to make it more 
-            in line with how it should be done when I have tried and failed the 
-            "intuitive" way, or otherwise feel ready to learn some more.
-          </div>
+        <nav class="clearfix">
+                  <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="model-viewer.html">Model viewer</a></li>
+                  </ul>
+                </nav>
+                <canvas class="ingress-content clearfix">
+                </canvas>
+            </div>
         </div>
-      </div>
       </section>
   </body>
 </html>
